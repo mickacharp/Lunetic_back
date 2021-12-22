@@ -78,14 +78,14 @@ const emailIsFree = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const userExists = async (req: Request, res: Response, next: NextFunction) => {
-  // Récupèrer l'id user de req.params
-  const { idUser } = req.params;
-  // Vérifier si le user existe
-  const userExists: IUser = await getById(Number(idUser));
+const opticianExists = async (req: Request, res: Response, next: NextFunction) => {
+  // Récupèrer l'id optician de req.params
+  const { id_optician } = req.params;
+  // Vérifier si le optician existe
+  const opticianExists: IUser = await getById(Number(id_optician));
   // Si non, => erreur
-  if (!userExists) {
-    next(new ErrorHandler(404, `This user doesn't exist`));
+  if (!opticianExists) {
+    next(new ErrorHandler(404, `This optician doesn't exist`));
   }
   // Si oui => next
   else {
@@ -100,11 +100,11 @@ const getAllOpticians = () => {
     .then(([results]: Array<IUser>) => results);
 };
 
-const getById = (idUser: number) => {
+const getById = (id_optician: number) => {
   return connection
     .promise()
-    .query('SELECT * FROM opticians WHERE id_optician = ?', [idUser])
-    .then(([results]: Array<Array<IUser>>) => results[0]);
+    .query('SELECT * FROM opticians WHERE id_optician = ?', [id_optician])
+    .then(([results]: Array<Array<IOptician>>) => results[0]);
 };
 
 const getByEmail = (email: string) => {
@@ -130,7 +130,7 @@ const addOptician = async (optician: IOptician) => {
         optician.city,
         optician.email,
         optician.mobile_phone,
-        optician.password,
+        hashedPassword,
         optician.website,
         optician.home_phone,
         optician.finess_code,
@@ -170,7 +170,7 @@ const addOptician = async (optician: IOptician) => {
         city,
         email,
         mobile_phone,
-        password,
+        hashedPassword,
         website,
         home_phone,
         finess_code,
@@ -181,39 +181,96 @@ const addOptician = async (optician: IOptician) => {
     });
 };
 
-const updateUser = async (idUser: number, user: IUser) => {
-  let sql: string = 'UPDATE users SET ';
-  let sqlValues: Array<any> = [];
-  let oneValue: boolean = false;
+const updateOptician = async (id_optician: number, optician: IOptician) => {
+  let sql = 'UPDATE opticians SET';
+  const sqlValues: Array<any> = [];
+  let oneValue = false;
 
-  if (user.firstname) {
-    sql += 'firstname = ? ';
-    sqlValues.push(user.firstname);
+  if (optician.firstname) {
+    sql += ' firstname = ? ';
+    sqlValues.push(optician.firstname);
     oneValue = true;
   }
-  if (user.lastname) {
+  if (optician.lastname) {
     sql += oneValue ? ', lastname = ? ' : ' lastname = ? ';
-    sqlValues.push(user.lastname);
+    sqlValues.push(optician.lastname);
     oneValue = true;
   }
-  if (user.email) {
+  if (optician.company) {
+    sql += oneValue ? ', company = ? ' : ' company = ? ';
+    sqlValues.push(optician.company);
+    oneValue = true;
+  }
+  if (optician.address) {
+    sql += oneValue ? ', address = ? ' : ' address = ? ';
+    sqlValues.push(optician.address);
+    oneValue = true;
+  }
+  if (optician.other_address) {
+    sql += oneValue ? ', other_address = ? ' : ' other_address = ? ';
+    sqlValues.push(optician.other_address);
+    oneValue = true;
+  }
+  if (optician.postal_code) {
+    sql += oneValue ? ', postal_code = ? ' : ' postal_code = ? ';
+    sqlValues.push(optician.postal_code);
+    oneValue = true;
+  }
+  if (optician.city) {
+    sql += oneValue ? ', city = ? ' : ' city = ? ';
+    sqlValues.push(optician.city);
+    oneValue = true;
+  }
+  if (optician.email) {
     sql += oneValue ? ', email = ? ' : ' email = ? ';
-    sqlValues.push(user.email);
+    sqlValues.push(optician.email);
     oneValue = true;
   }
-  if (user.password) {
+  if (optician.mobile_phone) {
+    sql += oneValue ? ', mobile_phone = ? ' : ' mobile_phone = ? ';
+    sqlValues.push(optician.mobile_phone);
+    oneValue = true;
+  }
+  if (optician.password) {
     sql += oneValue ? ', password = ? ' : ' password = ? ';
-    const hashedPassword: string = await hashPassword(user.password);
+    const hashedPassword: string = await hashPassword(optician.password);
     sqlValues.push(hashedPassword);
     oneValue = true;
   }
-  if (user.admin) {
-    sql += oneValue ? ', admin = ? ' : ' admin = ? ';
-    sqlValues.push(user.admin);
+  if (optician.website) {
+    sql += oneValue ? ', website = ? ' : ' website = ? ';
+    sqlValues.push(optician.website);
     oneValue = true;
   }
-  sql += ' WHERE id_user = ?';
-  sqlValues.push(idUser);
+
+  if (optician.home_phone) {
+    sql += oneValue ? ', home_phone = ? ' : ' home_phone = ? ';
+    sqlValues.push(optician.home_phone);
+    oneValue = true;
+  }
+  if (optician.finess_code) {
+    sql += oneValue ? ', finess_code = ? ' : ' finess_code = ? ';
+    sqlValues.push(optician.finess_code);
+    oneValue = true;
+  }
+  if (optician.siret) {
+    sql += oneValue ? ', siret = ? ' : ' siret = ? ';
+    sqlValues.push(optician.siret);
+    oneValue = true;
+  }
+  if (optician.vat_number) {
+    sql += oneValue ? ', vat_number = ? ' : ' vat_number = ? ';
+    sqlValues.push(optician.vat_number);
+    oneValue = true;
+  }
+  if (optician.link_picture) {
+    sql += oneValue ? ', link_picture = ? ' : ' link_picture = ? ';
+    sqlValues.push(optician.link_picture);
+    oneValue = true;
+  }
+  
+  sql += ' WHERE id_optician = ?';
+  sqlValues.push(id_optician);
 
   return connection
     .promise()
@@ -237,7 +294,7 @@ export {
   getByEmail,
   getById,
   deleteUser,
-  updateUser,
+  updateOptician,
   emailIsFree,
-  userExists,
+  opticianExists,
 };

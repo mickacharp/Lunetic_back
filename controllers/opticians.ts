@@ -4,6 +4,7 @@ import IOptician from '../interfaces/IOptician';
 import * as Auth from '../helpers/auth';
 
 import * as Optician from '../models/optician';
+import { ErrorHandler } from '../helpers/errors';
 
 ///////////// OPTICIAN ///////////////
 
@@ -12,6 +13,7 @@ opticiansRouter.get('/', (req: Request, res: Response) => {
     res.status(200).json(opticians);
   });
 });
+
 opticiansRouter.get('/:id_optician', (req: Request, res: Response) => {
   const { id_optician } = req.params;
   res.status(200).send('get user for id_optician ' + id_optician);
@@ -29,10 +31,26 @@ opticiansRouter.post(
   }
 );
 
-opticiansRouter.put('/:id_optician', (req: Request, res: Response) => {
-  const { id_optician } = req.params;
-  res.status(200).send('put optician for id_optician ' + id_optician);
-});
+opticiansRouter.put(
+  '/:id_optician',
+  Auth.getCurrentSession,
+  Optician.validateOptician,
+  Optician.opticianExists,
+  (req: Request, res: Response) => {
+    const { id_optician } = req.params;
+    const id = req.opticianInfo;
+    Optician.updateOptician(
+      Number(req.opticianInfo),
+      req.body as IOptician
+    ).then((updatedOptician) => {
+      if (updatedOptician) {
+        res.status(200).send('optician updated');
+      } else {
+        throw new ErrorHandler(500, 'Optician cannot be updated');
+      }
+    });
+  }
+);
 
 opticiansRouter.delete('/:id_optician', (req: Request, res: Response) => {
   const { id_optician } = req.params;

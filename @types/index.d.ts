@@ -1,9 +1,10 @@
 import * as express from 'express';
-import IUserInfo from '../interfaces/IUserInfo';
+import IOpticianInfo from '../interfaces/IOpticianInfo';
+
 declare global {
   namespace Express {
     interface Request {
-      userInfo?: IUserInfo;
+      opticianInfo?: IOpticianInfo;
     }
   }
 }
