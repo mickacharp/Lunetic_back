@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 const authRouter = require('express').Router();
-import * as User from '../models/user';
+import * as User from '../models/optician';
 import IUser from '../interfaces/IUser';
 import { ErrorHandler } from '../helpers/errors';
 
