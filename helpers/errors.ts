@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-require('dotenv').config();
+import 'dotenv/config';
 
 class ErrorHandler extends Error {
   statusCode: number;
