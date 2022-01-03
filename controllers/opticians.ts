@@ -45,6 +45,7 @@ opticiansRouter.put(
   Optician.validateOptician,
   Optician.opticianExists,
   (req: Request, res: Response) => {
+    req.opticianInfo &&
     Optician.updateOptician(
       req.opticianInfo.id,
       req.body as IOptician
