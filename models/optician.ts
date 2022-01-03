@@ -1,13 +1,13 @@
-const connection = require('../db-config');
+import connection from '../db-config';
 import IUser from '../interfaces/IUser';
 import Joi from 'joi';
-import argon2 from 'argon2';
+import argon2, { Options } from 'argon2';
 import { ResultSetHeader } from 'mysql2';
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOptician from '../interfaces/IOptician';
 
-const hashingOptions: Object = {
+const hashingOptions: Options & { raw?: false } = {
   type: argon2.argon2id,
   memoryCost: 2 ** 16,
   timeCost: 5,
@@ -66,7 +66,7 @@ const validateLogin = (req: Request, res: Response, next: NextFunction) => {
 
 const emailIsFree = async (req: Request, res: Response, next: NextFunction) => {
   // Récupèrer l'email dans le req.body
-  const optician: IOptician = req.body;
+  const optician = req.body as IOptician;
   // Vérifier si l'email appartient déjà à un user
   const opticianExists: IOptician = await getByEmail(optician.email);
   // Si oui => erreur
@@ -82,7 +82,7 @@ const opticianExists = async (req: Request, res: Response, next: NextFunction) =
   // Récupèrer l'id optician de req.params
   const { id_optician } = req.params;
   // Vérifier si le optician existe
-  const opticianExists: IUser = await getById(Number(id_optician));
+  const opticianExists: IOptician = await getById(Number(id_optician));
   // Si non, => erreur
   if (!opticianExists) {
     next(new ErrorHandler(404, `This optician doesn't exist`));
@@ -93,32 +93,32 @@ const opticianExists = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-const getAllOpticians = () => {
+const getAllOpticians = (): Promise<IOptician[]> => {
   return connection
     .promise()
-    .query('SELECT * FROM opticians')
-    .then(([results]: Array<IUser>) => results);
+    .query<IOptician[]>('SELECT * FROM opticians')
+    .then(([results]) => results);
 };
 
-const getById = (id_optician: number) => {
+const getById = (id_optician: number): Promise<IOptician> => {
   return connection
     .promise()
-    .query('SELECT * FROM opticians WHERE id_optician = ?', [id_optician])
-    .then(([results]: Array<Array<IOptician>>) => results[0]);
+    .query<IOptician[]>('SELECT * FROM opticians WHERE id_optician = ?', [id_optician])
+    .then(([results]) => results[0]);
 };
 
-const getByEmail = (email: string) => {
+const getByEmail = (email: string): Promise<IOptician> => {
   return connection
     .promise()
-    .query('SELECT * FROM opticians WHERE email = ?', [email])
-    .then(([results]: Array<Array<IOptician>>) => results[0]);
+    .query<IOptician[]>('SELECT * FROM opticians WHERE email = ?', [email])
+    .then(([results]) => results[0]);
 };
 
 const addOptician = async (optician: IOptician) => {
   const hashedPassword = await hashPassword(optician.password);
   return connection
     .promise()
-    .query(
+    .query<ResultSetHeader>(
       'INSERT INTO opticians (firstname, lastname,company, address, other_address, postal_code, city, email, mobile_phone, password, website, home_phone, finess_code, siret, vat_number, link_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         optician.firstname,
@@ -139,7 +139,7 @@ const addOptician = async (optician: IOptician) => {
         optician.link_picture,
       ]
     )
-    .then(([results]: Array<ResultSetHeader>) => {
+    .then(([results]) => {
       const id_optician = results.insertId;
       const {
         firstname,
@@ -181,9 +181,9 @@ const addOptician = async (optician: IOptician) => {
     });
 };
 
-const updateOptician = async (id_optician: number, optician: IOptician) => {
+const updateOptician = async (id_optician: number, optician: IOptician): Promise<boolean> => {
   let sql = 'UPDATE opticians SET';
-  const sqlValues: Array<any> = [];
+  const sqlValues: Array<string | number> = [];
   let oneValue = false;
 
   if (optician.firstname) {
@@ -274,15 +274,15 @@ const updateOptician = async (id_optician: number, optician: IOptician) => {
 
   return connection
     .promise()
-    .query(sql, sqlValues)
-    .then(([results]: Array<ResultSetHeader>) => results.affectedRows === 1);
+    .query<ResultSetHeader>(sql, sqlValues)
+    .then(([results]) => results.affectedRows === 1);
 };
 
-const deleteUser = async (idUser: number) => {
+const deleteOptician = (id_optician: number): Promise<boolean> => {
   return connection
     .promise()
-    .query('DELETE FROM users WHERE id_user = ?', [idUser])
-    .then(([results]: Array<ResultSetHeader>) => results.affectedRows === 1);
+    .query<ResultSetHeader>('DELETE FROM opticians WHERE id_optician = ?', [id_optician])
+    .then(([results]) => results.affectedRows === 1);
 };
 
 export {
@@ -293,7 +293,7 @@ export {
   addOptician,
   getByEmail,
   getById,
-  deleteUser,
+  deleteOptician,
   updateOptician,
   emailIsFree,
   opticianExists,

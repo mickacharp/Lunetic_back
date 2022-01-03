@@ -1,5 +1,5 @@
-const modelsRouter = require('express').Router();
-import { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
+const modelsRouter = Router();
 
 interface ModelInfo {
   name: string;

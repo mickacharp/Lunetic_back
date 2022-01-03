@@ -1,4 +1,6 @@
-export default interface IOptician {
+import { RowDataPacket } from 'mysql2';
+
+export default interface IOptician extends RowDataPacket {
   id_optician: number;
   firstname: string;
   lastname: string;

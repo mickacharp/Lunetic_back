@@ -1,5 +1,5 @@
-const colorsRouter = require('express').Router();
-import { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
+const colorsRouter = Router();
 
 interface ColorInfo {
   name: string;

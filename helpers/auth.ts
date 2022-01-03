@@ -1,28 +1,32 @@
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
+import IOpticianInfo from '../interfaces/IOpticianInfo';
 
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 
 const calculateToken = (opticianEmail = '', id_optician = 0) => {
   return jwt.sign(
     { email: opticianEmail, id: id_optician },
-    process.env.PRIVATE_KEY
+    process.env.PRIVATE_KEY as string
   );
 };
 
+interface ICookie {
+  optician_token: string;
+}
+
 const getCurrentSession = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.cookies.optician_token) {
+  const myCookie = req.cookies as ICookie;
+  if (!myCookie.optician_token) {
     next(new ErrorHandler(401, 'Unauthorized optician, please login'));
   }
-  const opticianInfo = jwt.verify(req.cookies.optician_token, process.env.PRIVATE_KEY);
-  if (opticianInfo === undefined) {
+  req.opticianInfo = jwt.verify(myCookie.optician_token, process.env.PRIVATE_KEY as string) as IOpticianInfo;
+  if (req.opticianInfo === undefined) {
     next(new ErrorHandler(401, 'Unauthorized optician, please login'));
   } else {
-    req.opticianInfo = opticianInfo.id
     next();
   }
-
 };
 
 const checkSessionPrivileges = (

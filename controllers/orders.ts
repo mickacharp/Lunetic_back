@@ -1,5 +1,5 @@
-const ordersRouter = require('express').Router();
-import { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
+const ordersRouter = Router();
 
 interface OrderInfo {
   id_status: number;
