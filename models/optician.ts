@@ -1,5 +1,4 @@
 import connection from '../db-config';
-import IUser from '../interfaces/IUser';
 import Joi from 'joi';
 import argon2, { Options } from 'argon2';
 import { ResultSetHeader } from 'mysql2';
