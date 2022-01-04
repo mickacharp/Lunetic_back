@@ -4,7 +4,6 @@ import { ResultSetHeader } from 'mysql2';
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOpeningHour from '../interfaces/IOpeningHour';
-import openingHoursRouter from '../controllers/openingHours';
 
 const validateOpeningHour = (req: Request, res: Response, next: NextFunction) => {
   let required: Joi.PresenceMode = 'optional';
