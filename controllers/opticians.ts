@@ -2,7 +2,6 @@ import { Request, Response, Router } from 'express';
 const opticiansRouter = Router();
 import IOptician from '../interfaces/IOptician';
 import * as Auth from '../helpers/auth';
-
 import * as Optician from '../models/optician';
 import { ErrorHandler } from '../helpers/errors';
 
