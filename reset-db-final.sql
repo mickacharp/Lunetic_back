@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS `project_lunetic`.`opening_hours` (
   `end_afternoon` VARCHAR(45) NULL,
   `id_optician` INT NOT NULL,
   `id_day` INT NULL,
-  PRIMARY KEY (`id_opening`),
+  PRIMARY KEY (`id_opening_hour`),
   CONSTRAINT `fk_opening_hours_opticians`
     FOREIGN KEY (`id_optician`)
     REFERENCES `project_lunetic`.`opticians` (`id_optician`)
