@@ -1,5 +1,4 @@
 import connection from '../db-config';
-import IUser from '../interfaces/IUser';
 import Joi from 'joi';
 import argon2, { Options } from 'argon2';
 import { ResultSetHeader } from 'mysql2';
@@ -78,7 +77,11 @@ const emailIsFree = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const opticianExists = async (req: Request, res: Response, next: NextFunction) => {
+const opticianExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Récupèrer l'id optician de req.params
   const { id_optician } = req.params;
   // Vérifier si le optician existe
@@ -103,7 +106,9 @@ const getAllOpticians = (): Promise<IOptician[]> => {
 const getById = (id_optician: number): Promise<IOptician> => {
   return connection
     .promise()
-    .query<IOptician[]>('SELECT * FROM opticians WHERE id_optician = ?', [id_optician])
+    .query<IOptician[]>('SELECT * FROM opticians WHERE id_optician = ?', [
+      id_optician,
+    ])
     .then(([results]) => results[0]);
 };
 
@@ -181,7 +186,10 @@ const addOptician = async (optician: IOptician) => {
     });
 };
 
-const updateOptician = async (id_optician: number, optician: IOptician): Promise<boolean> => {
+const updateOptician = async (
+  id_optician: number,
+  optician: IOptician
+): Promise<boolean> => {
   let sql = 'UPDATE opticians SET';
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
@@ -268,7 +276,7 @@ const updateOptician = async (id_optician: number, optician: IOptician): Promise
     sqlValues.push(optician.link_picture);
     oneValue = true;
   }
-  
+
   sql += ' WHERE id_optician = ?';
   sqlValues.push(id_optician);
 
@@ -281,7 +289,9 @@ const updateOptician = async (id_optician: number, optician: IOptician): Promise
 const deleteOptician = (id_optician: number): Promise<boolean> => {
   return connection
     .promise()
-    .query<ResultSetHeader>('DELETE FROM opticians WHERE id_optician = ?', [id_optician])
+    .query<ResultSetHeader>('DELETE FROM opticians WHERE id_optician = ?', [
+      id_optician,
+    ])
     .then(([results]) => results.affectedRows === 1);
 };
 
