@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 const modelsRouter = Router();
+import * as Model from '../models/model';
 
 interface ModelInfo {
   name: string;
@@ -8,7 +9,14 @@ interface ModelInfo {
 ///////////// PRODUCTS ///////////////
 
 modelsRouter.get('/', (req: Request, res: Response) => {
-  res.status(200).send('get all models');
+  Model.getAllModels().then((models) => res.status(200).json(models));
 });
 
-module.exports = { modelsRouter };
+modelsRouter.get('/:id_model', (req: Request, res: Response) => {
+  Model.getById(Number(req.params.id_model)).then((model) => {
+    console.log(model);
+    res.status(200).json(model);
+  });
+});
+
+export default modelsRouter;
