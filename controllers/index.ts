@@ -7,6 +7,7 @@ import templesRouter from './temples';
 import newsRouter from './news';
 import wishlistsRouter from './wishlists';
 import openingHoursRouter from './openingHours';
+import ordersRouter from './orders';
 
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
@@ -17,6 +18,7 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/news', newsRouter);
   app.use('/api/wishlists', wishlistsRouter);
   app.use('/api/openingHours', openingHoursRouter);
+  app.use('/api/orders', ordersRouter);
 };
 
 export default setupRoutes;
