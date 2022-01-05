@@ -1,6 +1,6 @@
 import express from 'express';
-import cookieParser from 'cookie-parser';
-import 'dotenv/config';
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
 import { handleError } from './helpers/errors';
 import setupRoutes from './controllers';
 
