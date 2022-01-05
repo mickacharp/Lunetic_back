@@ -42,11 +42,39 @@ const validateCollection = (
   const errors = Joi.object({
     name: Joi.string().max(255).presence(required),
   }).validate(req.body, { abortEarly: false }).error;
-  if (error) {
-    next(new ErrorHandler(422, error.message));
+  if (errors) {
+    next(new ErrorHandler(422, errors.message));
   } else {
     next();
   }
+};
+
+const addCollection = (collection: ICollection) => {
+  return connection
+    .promise()
+    .query<ResultSetHeader>('INSERT INTO collections (name) VALUES (?)', [
+      collection.name,
+    ])
+    .then(([results]) => {
+      const id_collection = results.insertId;
+      const { name } = collection;
+      return {
+        id_collection,
+        name,
+      };
+    });
+};
+
+const updateCollection = (
+  id_collection: number,
+  collection: ICollection
+): Promise<boolean> => {
+  return connection
+    .promise()
+    .query<ResultSetHeader>(`UPDATE collections SET name = ?`, [
+      collection.name,
+    ])
+    .then(([results]) => results.affectedRows === 1);
 };
 
 export {
@@ -54,4 +82,6 @@ export {
   getCollectionById,
   deleteCollection,
   validateCollection,
+  addCollection,
+  updateCollection,
 };

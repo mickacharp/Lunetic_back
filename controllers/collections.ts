@@ -43,4 +43,34 @@ collectionsRouter.delete('/:id_collection', (req: Request, res: Response) => {
     });
 });
 
+collectionsRouter.post(
+  '/',
+  Collection.validateCollection,
+  (req: Request, res: Response) => {
+    const collection = req.body as ICollection;
+    Collection.addCollection(collection)
+      .then((newCollection) => res.status(200).json(newCollection))
+      .catch((err) => {
+        console.log(err);
+        throw new ErrorHandler(500, 'Collection cannot be created');
+      });
+  }
+);
+
+collectionsRouter.put('/:id_collection', (req: Request, res: Response) => {
+  const { id_collection } = req.params;
+  Collection.updateCollection(Number(id_collection), req.body as ICollection)
+    .then((updatedCollection) => {
+      if (updatedCollection) {
+        res.status(200).send('Collection updated');
+      } else {
+        res.status(401).send('Collection cannot be updated');
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      throw new ErrorHandler(500, 'Collection cannot be modified');
+    });
+});
+
 export default collectionsRouter;

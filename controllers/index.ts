@@ -10,7 +10,7 @@ import openingHoursRouter from './openingHours';
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
   app.use('/api/login', authRouter);
-  app.use('./api/collections', collectionsRouter);
+  app.use('/api/collections', collectionsRouter);
   app.use('/api/temples', templesRouter);
   app.use('/api/news', newsRouter);
   app.use('/api/wishlists', wishlistsRouter);
