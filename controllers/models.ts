@@ -5,13 +5,13 @@ import IModel from '../interfaces/IModel';
 
 import { ErrorHandler } from '../helpers/errors';
 
-///////////// GETALL ///////////////
+///////////// GET ALL ///////////////
 
 modelsRouter.get('/', (req: Request, res: Response) => {
   Model.getAllModels().then((models) => res.status(200).json(models));
 });
 
-///////////// GETONE ///////////////
+///////////// GET ONE ///////////////
 
 modelsRouter.get('/:id_model', (req: Request, res: Response) => {
   Model.getById(Number(req.params.id_model))
