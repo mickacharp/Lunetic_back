@@ -1,23 +1,29 @@
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
+import IOpticianInfo from '../interfaces/IOpticianInfo';
 
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+import jwt from 'jsonwebtoken';
+import 'dotenv/config';
 
-const calculateToken = (userEmail = '', idUser = 0, admin = false) => {
+const calculateToken = (opticianEmail = '', id_optician = 0) => {
   return jwt.sign(
-    { email: userEmail, id: idUser, admin: admin },
-    process.env.PRIVATE_KEY
+    { email: opticianEmail, id: id_optician },
+    process.env.PRIVATE_KEY as string
   );
 };
 
+interface ICookie {
+  optician_token: string;
+}
+
 const getCurrentSession = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.cookies.user_token) {
-    next(new ErrorHandler(401, 'Unauthorized user, please login'));
+  const myCookie = req.cookies as ICookie;
+  if (!myCookie.optician_token) {
+    next(new ErrorHandler(401, 'Unauthorized optician, please login'));
   }
-  req.userInfo = jwt.decode(req.cookies.user_token);
-  if (req.userInfo === undefined) {
-    next(new ErrorHandler(401, 'Unauthorized user, please login'));
+  req.opticianInfo = jwt.verify(myCookie.optician_token, process.env.PRIVATE_KEY as string) as IOpticianInfo;
+  if (req.opticianInfo === undefined) {
+    next(new ErrorHandler(401, 'Unauthorized optician, please login'));
   } else {
     next();
   }
@@ -28,7 +34,7 @@ const checkSessionPrivileges = (
   res: Response,
   next: NextFunction
 ) => {
-  if (req.userInfo === undefined || !req.userInfo.admin) {
+  if (req.opticianInfo === undefined) {
     next(new ErrorHandler(401, 'You must be admin to perform this action'));
   } else {
     next();

@@ -1,6 +1,5 @@
 import express from 'express';
-import usersRouter from './users';
-import addressesRouter from './adresses';
+import opticiansRouter from './opticians';
 import authRouter from './auth';
 import collectionsRouter from './collections';
 import templesRouter from './temples';
@@ -10,8 +9,7 @@ import openingHoursRouter from './openingHours';
 import ordersRouter from './orders';
 
 const setupRoutes = (app: express.Application) => {
-  app.use('/api/users', usersRouter);
-  app.use('/api/addresses', addressesRouter);
+  app.use('/api/opticians', opticiansRouter);
   app.use('/api/login', authRouter);
   app.use('/api/collections', collectionsRouter);
   app.use('/api/temples', templesRouter);

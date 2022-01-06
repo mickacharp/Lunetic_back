@@ -1,5 +1,5 @@
 node_modules/
 *.js
 .env
-reset-db-final.sql
 package-lock.json
+reset-db-final.sql
