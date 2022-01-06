@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `project_lunetic`.`orders` (
   `id_optician` INT NOT NULL,
   `link_pdf` VARCHAR(255) NULL,
   `order_number` VARCHAR(100) NOT NULL,
-  `date` DATE NOT NULL,
+  `date` VARCHAR(10) NOT NULL,
   PRIMARY KEY (`id_order`),
   CONSTRAINT `fk_orders_opticians`
     FOREIGN KEY (`id_optician`)
