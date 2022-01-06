@@ -5,7 +5,7 @@ interface ModelInfo {
   name: string;
 }
 
-///////////// PRODUCTS ///////////////
+///////////// PRODUCTS ////////////////
 
 modelsRouter.get('/', (req: Request, res: Response) => {
   res.status(200).send('get all models');
