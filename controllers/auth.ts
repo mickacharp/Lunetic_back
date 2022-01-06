@@ -1,29 +1,31 @@
-import { Request, Response, NextFunction } from 'express';
-const authRouter = require('express').Router();
-import * as User from '../models/user';
-import IUser from '../interfaces/IUser';
+import { Request, Response, NextFunction, Router } from 'express';
+import * as Optician from '../models/optician';
+import IOptician from '../interfaces/IOptician';
 import { ErrorHandler } from '../helpers/errors';
-
 import { calculateToken } from '../helpers/auth';
 
+const authRouter = Router();
+
 authRouter.post(
-  '/',
-  async (req: Request, res: Response, next: NextFunction) => {
+  '/', (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password } = req.body;
-      const user: IUser = await User.getByEmail(email);
-      if (!user) throw new ErrorHandler(401, 'This user does not exist');
+      const { email, password } = req.body as IOptician;
+      Optician.getByEmail(email)
+      .then(async (optician) => {
+        if (!optician) throw new ErrorHandler(401, 'This optician does not exist');
       else {
-        const passwordIsCorrect: boolean = await User.verifyPassword(
+        const passwordIsCorrect: boolean = await Optician.verifyPassword(
           password,
-          user.password
+          optician.password
         );
         if (passwordIsCorrect) {
-          const token = calculateToken(email, Number(user.id_user), user.admin);
-          res.cookie('user_token', token);
+          const token: string = calculateToken(email, Number(optician.id_optician));
+          res.cookie('optician_token', token);
           res.send();
         } else throw new ErrorHandler(401, 'Invalid Credentials');
       }
+      })
+      .catch((err) => next(err));
     } catch (err) {
       next(err);
     }
