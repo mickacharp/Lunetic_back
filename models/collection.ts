@@ -71,9 +71,10 @@ const updateCollection = (
 ): Promise<boolean> => {
   return connection
     .promise()
-    .query<ResultSetHeader>(`UPDATE collections SET name = ?`, [
-      collection.name,
-    ])
+    .query<ResultSetHeader>(
+      `UPDATE collections SET name = ? WHERE id_collection = ?`,
+      [collection.name, id_collection]
+    )
     .then(([results]) => results.affectedRows === 1);
 };
 
