@@ -56,7 +56,6 @@ const updateTemple = (id_temple: number, temple: ITemple): Promise<boolean> => {
   }
 
   if (temple.id_collection) {
-    console.log(temple.id_collection);
     sql += oneValue ? ', id_collection = ? ' : 'id_collection = ? ';
     sqlValues.push(temple.id_collection);
     oneValue = true;
