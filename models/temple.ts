@@ -45,12 +45,29 @@ const addTemple = (temple: ITemple) => {
 };
 
 const updateTemple = (id_temple: number, temple: ITemple): Promise<boolean> => {
+  let sql = 'UPDATE temples SET ';
+  const sqlValues: Array<string | number> = [];
+  let oneValue = false;
+
+  if (temple.name) {
+    sql += 'name = ? ';
+    sqlValues.push(temple.name);
+    oneValue = true;
+  }
+
+  if (temple.id_collection) {
+    console.log(temple.id_collection);
+    sql += oneValue ? ', id_collection = ? ' : 'id_collection = ? ';
+    sqlValues.push(temple.id_collection);
+    oneValue = true;
+  }
+
+  sql += 'WHERE id_temple = ?';
+  sqlValues.push(id_temple);
+
   return connection
     .promise()
-    .query<ResultSetHeader>(
-      `UPDATE temples SET name = ?, id_collection = ? WHERE id_temple = ?`,
-      [temple.name, temple.id_collection, id_temple]
-    )
+    .query<ResultSetHeader>(sql, sqlValues)
     .then(([results]) => results.affectedRows === 1);
 };
 
