@@ -7,6 +7,8 @@ import newsRouter from './news';
 import wishlistsRouter from './wishlists';
 import openingHoursRouter from './openingHours';
 import ordersRouter from './orders';
+import modelsRouter from './models';
+import daysRouter from './days';
 
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
@@ -17,6 +19,8 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/wishlists', wishlistsRouter);
   app.use('/api/openingHours', openingHoursRouter);
   app.use('/api/orders', ordersRouter);
+  app.use('/api/models', modelsRouter);
+  app.use('/api/days', daysRouter);
 };
 
 export default setupRoutes;
