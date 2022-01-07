@@ -20,9 +20,7 @@ opticiansRouter.get('/', (req: Request, res: Response) => {
 
 opticiansRouter.get('/:id_optician', (req: Request, res: Response) => {
   const { id_optician } = req.params;
-  Optician.getById(Number(id_optician)).then((optician) => {
-    res.status(200).json(optician);
-  });
+  res.status(200).send('get user for id_optician ' + id_optician);
 });
 
 opticiansRouter.post(

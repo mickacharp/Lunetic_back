@@ -8,7 +8,12 @@ import { ErrorHandler } from '../helpers/errors';
 ///////////// GET ALL ///////////////
 
 modelsRouter.get('/', (req: Request, res: Response) => {
-  Model.getAllModels().then((models) => res.status(200).json(models));
+  Model.getAllModels()
+    .then((models) => res.status(200).json(models))
+    .catch((err) => {
+      console.log(err);
+      throw new ErrorHandler(500, 'models cannot be found');
+    });
 });
 
 ///////////// GET ONE ///////////////
@@ -85,7 +90,7 @@ modelsRouter.delete('/:id_model', (req: Request, res: Response) => {
   Model.deleteModel(Number(id_model))
     .then((deleteModel) => {
       if (deleteModel) {
-        res.status(200).send('model temple for id_temple ' + id_model);
+        res.status(200).send('model' + id_model + 'deleted');
       } else {
         res.status(401).send('No model found');
       }
