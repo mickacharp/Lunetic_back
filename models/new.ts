@@ -35,21 +35,11 @@ const addNews = (news: INews) => {
     .promise()
     .query<ResultSetHeader>(
       'INSERT INTO news (title, subtitle, text, link_picture) VALUES (?, ?, ?, ?)',
-      [
-        news.title,
-        news.subtitle,
-        news.text,
-        news.link_picture,
-      ]
+      [news.title, news.subtitle, news.text, news.link_picture]
     )
     .then(([results]) => {
       const id_news = results.insertId;
-      const {
-        title,
-        subtitle,
-        text,
-        link_picture,
-      } = news;
+      const { title, subtitle, text, link_picture } = news;
       return {
         id_news,
         title,
@@ -72,8 +62,7 @@ const newsExists = async (req: Request, res: Response, next: NextFunction) => {
   const newsExists: INews = await getById(Number(id_news));
   if (!newsExists) {
     next(new ErrorHandler(404, `This news doesn't exist`));
-  }
-  else {
+  } else {
     next();
   }
 };
@@ -103,7 +92,7 @@ const updateNews = async (id_news: number, news: INews): Promise<boolean> => {
     sqlValues.push(news.link_picture);
     oneValue = true;
   }
-  
+
   sql += ' WHERE id_news = ?';
   sqlValues.push(id_news);
 
@@ -127,4 +116,4 @@ export {
   newsExists,
   updateNews,
   deleteNews,
-}
+};
