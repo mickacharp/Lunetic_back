@@ -22,7 +22,6 @@ const getById = (id_model: number): Promise<IModel> => {
 };
 
 const getByCollection = (id_collection: number): Promise<IModel[]> => {
-  console.log(id_collection + 'fdsfd');
   return connection
     .promise()
     .query<IModel[]>('select * from models where id_collection=?', [
