@@ -20,7 +20,18 @@ opticiansRouter.get('/', (req: Request, res: Response) => {
 
 opticiansRouter.get('/:id_optician', (req: Request, res: Response) => {
   const { id_optician } = req.params;
-  res.status(200).send('get user for id_optician ' + id_optician);
+  Optician.getById(Number(id_optician))
+    .then((optician) => {
+      if (optician) {
+        res.status(200).json(optician);
+      } else {
+        res.status(401).send('No optician found');
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      throw new ErrorHandler(500, 'Optician cannot be found');
+    });
 });
 
 opticiansRouter.post(
