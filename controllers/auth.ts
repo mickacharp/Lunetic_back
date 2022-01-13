@@ -23,7 +23,10 @@ authRouter.post('/', (req: Request, res: Response, next: NextFunction) => {
               email,
               Number(optician.id_optician)
             );
-            res.cookie('optician_token', token);
+            res.cookie('optician_token', token, {
+              expires: new Date(new Date().getTime() + 3600 * 1000),
+              httpOnly: true,
+            });
             res.json({
               id_optician: optician.id_optician,
             });
