@@ -22,7 +22,7 @@ const verifyPassword = (password: string, hashedPassword: string) => {
   return argon2.verify(hashedPassword, password, hashingOptions);
 };
 
-const getGeocode = (city: string, address: string) => {
+const getGeocode = (address: string, zipcode: number) => {
   const options = {
     provider: 'google',
 
@@ -34,7 +34,11 @@ const getGeocode = (city: string, address: string) => {
   const geocoder = NodeGeocoder(options);
 
   // Using callback
-  return geocoder.geocode(city, address);
+  return geocoder.geocode({
+    address: address,
+    country: 'France',
+    zipcode: zipcode,
+  });
 };
 
 const validateOptician = (req: Request, res: Response, next: NextFunction) => {
@@ -137,6 +141,7 @@ const getByEmail = (email: string): Promise<IOptician> => {
 
 const addOptician = async (optician: IOptician) => {
   const hashedPassword = await hashPassword(optician.password);
+
   const result = await getGeocode(optician.address, optician.postal_code);
   const lat = result[0].latitude;
   const lng = result[0].longitude;
@@ -219,8 +224,20 @@ const updateOptician = async (
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
 
+  if (optician.address || optician.city || optician.postal_code) {
+    const result = await getGeocode(optician.address, optician.postal_code);
+    const lat = result[0].latitude;
+    const lng = result[0].longitude;
+    console.log(lat, lng);
+    sql += ' lat = ? ';
+    sqlValues.push(lat);
+    sql += oneValue ? ', lng = ? ' : ', lng=?';
+    sqlValues.push(lng);
+    oneValue = true;
+  }
+
   if (optician.firstname) {
-    sql += ' firstname = ? ';
+    sql += oneValue ? ', firstname = ? ' : ', firstname = ?';
     sqlValues.push(optician.firstname);
     oneValue = true;
   }
@@ -236,13 +253,8 @@ const updateOptician = async (
   }
   if (optician.address) {
     sql += oneValue ? ', address = ? ' : ' address = ? ';
-    getGeocode(optician.address, optician.city).then((result: any) =>
-      console.log(result[0])
-    );
-    /*  console.log(result);
-    const lat = result[0].latitude;
-    const lng = result[0].longitude; */
-    sqlValues.push(optician.address /* , lat, lng) */);
+    sqlValues.push(optician.address);
+
     oneValue = true;
   }
   if (optician.other_address) {
