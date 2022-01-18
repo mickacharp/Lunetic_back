@@ -5,6 +5,7 @@ import { ResultSetHeader } from 'mysql2';
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOptician from '../interfaces/IOptician';
+const NodeGeocoder = require('node-geocoder');
 
 const hashingOptions: Options & { raw?: false } = {
   type: argon2.argon2id,
@@ -19,6 +20,25 @@ const hashPassword = (password: string) => {
 
 const verifyPassword = (password: string, hashedPassword: string) => {
   return argon2.verify(hashedPassword, password, hashingOptions);
+};
+
+const getGeocode = (address: string, zipcode: number) => {
+  const options = {
+    provider: 'google',
+
+    // Optional depending on the providers
+    //fetch: axios,
+    apiKey: 'AIzaSyAj7bIhidKqNcgh0IT_q0ORqcHH3S7wA6U', // for Mapquest, OpenCage, Google Premier
+    formatter: null, // 'gpx', 'string', ...
+  };
+  const geocoder = NodeGeocoder(options);
+
+  // Using callback
+  return geocoder.geocode({
+    address: address,
+    country: 'France',
+    zipcode: zipcode,
+  });
 };
 
 const validateOptician = (req: Request, res: Response, next: NextFunction) => {
@@ -121,10 +141,16 @@ const getByEmail = (email: string): Promise<IOptician> => {
 
 const addOptician = async (optician: IOptician) => {
   const hashedPassword = await hashPassword(optician.password);
+
+  const result = await getGeocode(optician.address, optician.postal_code);
+  const lat = result[0].latitude;
+  const lng = result[0].longitude;
+  console.log(lat, lng);
+
   return connection
     .promise()
     .query<ResultSetHeader>(
-      'INSERT INTO opticians (firstname, lastname,company, address, other_address, postal_code, city, email, mobile_phone, password, website, home_phone, finess_code, siret, vat_number, link_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO opticians (firstname, lastname,company, address, other_address, postal_code, city, email, mobile_phone, password, website, home_phone, finess_code, siret, vat_number, link_picture, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         optician.firstname,
         optician.lastname,
@@ -142,6 +168,8 @@ const addOptician = async (optician: IOptician) => {
         optician.siret,
         optician.vat_number,
         optician.link_picture,
+        lat,
+        lng,
       ]
     )
     .then(([results]) => {
@@ -182,6 +210,8 @@ const addOptician = async (optician: IOptician) => {
         siret,
         vat_number,
         link_picture,
+        lat,
+        lng,
       };
     });
 };
@@ -194,8 +224,20 @@ const updateOptician = async (
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
 
+  if (optician.address || optician.city || optician.postal_code) {
+    const result = await getGeocode(optician.address, optician.postal_code);
+    const lat = result[0].latitude;
+    const lng = result[0].longitude;
+    console.log(lat, lng);
+    sql += ' lat = ? ';
+    sqlValues.push(lat);
+    sql += oneValue ? ', lng = ? ' : ', lng=?';
+    sqlValues.push(lng);
+    oneValue = true;
+  }
+
   if (optician.firstname) {
-    sql += ' firstname = ? ';
+    sql += oneValue ? ', firstname = ? ' : ', firstname = ?';
     sqlValues.push(optician.firstname);
     oneValue = true;
   }
@@ -212,6 +254,7 @@ const updateOptician = async (
   if (optician.address) {
     sql += oneValue ? ', address = ? ' : ' address = ? ';
     sqlValues.push(optician.address);
+
     oneValue = true;
   }
   if (optician.other_address) {
