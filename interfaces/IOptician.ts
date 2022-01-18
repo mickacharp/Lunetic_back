@@ -18,4 +18,6 @@ export default interface IOptician extends RowDataPacket {
   siret: string;
   vat_number: string;
   link_picture: string;
+  lat: number;
+  lng: number;
 }

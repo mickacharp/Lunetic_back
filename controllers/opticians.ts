@@ -4,6 +4,8 @@ import IOptician from '../interfaces/IOptician';
 import * as Auth from '../helpers/auth';
 import * as Optician from '../models/optician';
 import { ErrorHandler } from '../helpers/errors';
+import { resolve } from 'path';
+import { number } from 'joi';
 
 ///////////// OPTICIAN ///////////////
 
