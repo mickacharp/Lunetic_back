@@ -6,6 +6,7 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOptician from '../interfaces/IOptician';
 const NodeGeocoder = require('node-geocoder');
+import apiKey from '../api';
 
 const hashingOptions: Options & { raw?: false } = {
   type: argon2.argon2id,
@@ -28,7 +29,7 @@ const getGeocode = (address: string, zipcode: number) => {
 
     // Optional depending on the providers
     //fetch: axios,
-    apiKey: 'AIzaSyAj7bIhidKqNcgh0IT_q0ORqcHH3S7wA6U', // for Mapquest, OpenCage, Google Premier
+    apiKey: apiKey, // for Mapquest, OpenCage, Google Premier
     formatter: null, // 'gpx', 'string', ...
   };
   const geocoder = NodeGeocoder(options);
@@ -224,7 +225,7 @@ const updateOptician = async (
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
 
-  if (optician.address || optician.city || optician.postal_code) {
+  if (optician.address || optician.postal_code) {
     const result = await getGeocode(optician.address, optician.postal_code);
     const lat = result[0].latitude;
     const lng = result[0].longitude;
