@@ -146,7 +146,6 @@ const addOptician = async (optician: IOptician) => {
   const result = await getGeocode(optician.address, optician.postal_code);
   const lat = result[0].latitude;
   const lng = result[0].longitude;
-  console.log(lat, lng);
 
   return connection
     .promise()
@@ -229,7 +228,6 @@ const updateOptician = async (
     const result = await getGeocode(optician.address, optician.postal_code);
     const lat = result[0].latitude;
     const lng = result[0].longitude;
-    console.log(lat, lng);
     sql += ' lat = ? ';
     sqlValues.push(lat);
     sql += oneValue ? ', lng = ? ' : ', lng=?';
