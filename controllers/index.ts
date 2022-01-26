@@ -10,7 +10,7 @@ import openingHoursRouter from './openingHours';
 import ordersRouter from './orders';
 import modelsRouter from './models';
 import daysRouter from './days';
-import contactUserRouter from './contactUser';
+import contactGuestRouter from './contactGuest';
 
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
@@ -24,7 +24,7 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/orders', ordersRouter);
   app.use('/api/models', modelsRouter);
   app.use('/api/days', daysRouter);
-  app.use('/api/contact-user', contactUserRouter);
+  app.use('/api/contact-guest', contactGuestRouter);
 };
 
 export default setupRoutes;

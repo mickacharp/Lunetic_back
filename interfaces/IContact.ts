@@ -1,12 +1,12 @@
 import { RowDataPacket } from 'mysql2';
 
 export default interface IContact extends RowDataPacket {
-  userFirstname: string;
-  userLastname: string;
-  userEmail: string;
-  userPhone: string;
-  userSubject: string;
-  userMessage: string;
+  guestFirstname: string;
+  guestLastname: string;
+  guestEmail: string;
+  guestPhone: string;
+  guestSubject: string;
+  guestMessage: string;
 
   proFirstname: string;
   proLastname: string;
