@@ -1,16 +1,21 @@
 import { Request, Response, Router } from 'express';
 import nodemailer from 'nodemailer';
 import IContact from '../interfaces/IContact';
-const contactUserRouter = Router();
+const contactProRouter = Router();
 
-contactUserRouter.post('/', (req: Request, res: Response) => {
+contactProRouter.post('/', (req: Request, res: Response) => {
   const {
-    userFirstname,
-    userLastname,
-    userEmail,
-    userPhone,
-    userSubject,
-    userMessage,
+    proFirstname,
+    proLastname,
+    proCompany,
+    proStreetNumber,
+    proStreet,
+    proCity,
+    proPhone,
+    proMobilePhone,
+    proEmail,
+    proSubject,
+    proMessage,
   } = req.body as IContact;
 
   const transporter = nodemailer.createTransport({
@@ -24,17 +29,21 @@ contactUserRouter.post('/', (req: Request, res: Response) => {
   const mailOptions = {
     from: 'mickaelcharp@gmail.com',
     to: process.env.EMAIL,
-    subject: `[VISITEUR] ${userSubject}`,
-    text: `Nouveau message reçu par un visiteur. Voici ses coordonnées :
+    subject: `[PRO] ${proSubject}`,
+    text: `Nouveau message reçu par un professionnel. Voici ses coordonnées :
 
-    Prénom : ${userFirstname}
-    Nom : ${userLastname}
-    Email: ${userEmail}
-    Téléphone : ${userPhone}
+    Prénom : ${proFirstname}
+    Nom : ${proLastname}
+    Société/Magasin : ${proCompany}
+
+    Adresse : ${proStreetNumber} ${proStreet}, ${proCity}
+    Téléphone Fixe : ${proPhone}
+    Téléphone Mobile : ${proMobilePhone}
+    Email : ${proEmail}
 
     Contenu du message : 
 
-    ${userMessage}`,
+    ${proMessage}`,
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
@@ -48,4 +57,4 @@ contactUserRouter.post('/', (req: Request, res: Response) => {
   res.status(200).send();
 });
 
-export default contactUserRouter;
+export default contactProRouter;
