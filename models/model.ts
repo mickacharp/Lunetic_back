@@ -34,16 +34,22 @@ const addModel = (model: IModel) => {
   return connection
     .promise()
     .query<ResultSetHeader>(
-      'INSERT INTO models (name, id_collection) VALUES (?,?)',
-      [model.name, model.id_collection]
+      'INSERT INTO models (name, id_collection, main_img, img_2, img_3, img_4, img_5, text) VALUES (?,?,?,?,?,?,?,?)',
+      [model.name, model.id_collection, model.main_img, model.img_2, model.img_3, model.img_4, model.img_5, model.text]
     )
     .then(([results]) => {
       const id_model = results.insertId;
-      const { name, id_collection } = model;
+      const { name, id_collection, main_img, img_2, img_3, img_4, img_5, text } = model;
       return {
         id_model,
         name,
         id_collection,
+        main_img,
+        img_2,
+        img_3,
+        img_4,
+        img_5,
+        text
       };
     });
 };
