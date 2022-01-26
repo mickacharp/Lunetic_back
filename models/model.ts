@@ -6,7 +6,7 @@ const getAllModels = (): Promise<IModel[]> => {
   return connection
     .promise()
     .query<IModel[]>(
-      'select * from models inner join collections on collections.id_collection=models.id_collection'
+      'select * from models'
     )
     .then(([results]) => results);
 };
@@ -15,7 +15,7 @@ const getById = (id_model: number): Promise<IModel> => {
   return connection
     .promise()
     .query<IModel[]>(
-      'select * from models inner join collections on collections.id_collection=models.id_collection where id_model=?',
+      'select * from models where id_model=?',
       [id_model]
     )
     .then(([results]) => results[0]);
@@ -54,14 +54,58 @@ const addModel = (model: IModel) => {
     });
 };
 
-const updateModel = (id_model: number, model: IModel): Promise<boolean> => {
-  console.log(id_model);
+const updateModel = async (id_model: number, model: IModel): Promise<boolean> => {
+  let sql = 'UPDATE models SET';
+  const sqlValues: Array<string | number> = [];
+  let oneValue = false;
+
+  if (model.name) {
+    sql += ' name = ? ';
+    sqlValues.push(model.name);
+    oneValue = true;
+  }
+  if (model.id_collection) {
+    sql += oneValue ? ', id_collection = ? ' : ' id_collection = ? ';
+    sqlValues.push(model.id_collection);
+    oneValue = true;
+  }
+  if (model.main_img) {
+    sql += oneValue ? ', main_img = ? ' : ' main_img = ? ';
+    sqlValues.push(model.main_img);
+    oneValue = true;
+  }
+  if (model.img_2) {
+    sql += oneValue ? ', img_2 = ? ' : ' img_2 = ? ';
+    sqlValues.push(model.img_2);
+    oneValue = true;
+  }
+  if (model.img_3) {
+    sql += oneValue ? ', img_3 = ? ' : ' img_3 = ? ';
+    sqlValues.push(model.img_3);
+    oneValue = true;
+  }
+  if (model.img_4) {
+    sql += oneValue ? ', img_4 = ? ' : ' img_4 = ? ';
+    sqlValues.push(model.img_4);
+    oneValue = true;
+  }
+  if (model.img_5) {
+    sql += oneValue ? ', img_5 = ? ' : ' img_5 = ? ';
+    sqlValues.push(model.img_5);
+    oneValue = true;
+  }
+  if (model.text) {
+    sql += oneValue ? ', text = ? ' : ' text = ? ';
+    sqlValues.push(model.text);
+    oneValue = true;
+  }
+  
+  sql += ' WHERE id_model = ?';
+  sqlValues.push(id_model);
+
   return connection
     .promise()
-    .query<ResultSetHeader>(
-      `UPDATE models SET name = ?, id_collection = ? WHERE id_model = ?`,
-      [model.name, model.id_collection, id_model]
-    )
+    .query<ResultSetHeader>(sql, sqlValues)
     .then(([results]) => results.affectedRows === 1);
 };
 
