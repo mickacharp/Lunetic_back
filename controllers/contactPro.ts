@@ -28,7 +28,7 @@ contactProRouter.post('/', (req: Request, res: Response) => {
 
   const mailOptions = {
     from: 'mickaelcharp@gmail.com',
-    to: process.env.EMAIL,
+    to: 'sikeda1265@yks247.com',
     subject: `[PRO] ${proSubject}`,
     text: `Nouveau message reçu par un professionnel. Voici ses coordonnées :
 

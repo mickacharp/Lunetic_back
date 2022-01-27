@@ -23,7 +23,7 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
 
   const mailOptions = {
     from: 'mickaelcharp@gmail.com',
-    to: process.env.EMAIL,
+    to: 'sikeda1265@yks247.com',
     subject: `[VISITEUR] ${guestSubject}`,
     text: `Nouveau message reçu par un visiteur. Voici ses coordonnées :
 
