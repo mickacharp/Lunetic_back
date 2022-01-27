@@ -12,6 +12,7 @@ import modelsRouter from './models';
 import daysRouter from './days';
 import contactGuestRouter from './contactGuest';
 import contactProRouter from './contactPro';
+import contactConfirmationRouter from './contactConfirmation';
 
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
@@ -27,6 +28,7 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/days', daysRouter);
   app.use('/api/contact-guest', contactGuestRouter);
   app.use('/api/contact-pro', contactProRouter);
+  app.use('/api/contact-confirmation', contactConfirmationRouter);
 };
 
 export default setupRoutes;
