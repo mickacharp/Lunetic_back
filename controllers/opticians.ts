@@ -3,6 +3,7 @@ const opticiansRouter = Router();
 import IOptician from '../interfaces/IOptician';
 import * as Auth from '../helpers/auth';
 import * as Optician from '../models/optician';
+import * as OpeningHour from '../models/openingHour';
 import { ErrorHandler } from '../helpers/errors';
 import { resolve } from 'path';
 import { number } from 'joi';
@@ -35,6 +36,21 @@ opticiansRouter.get('/:id_optician', (req: Request, res: Response) => {
       throw new ErrorHandler(500, 'Optician cannot be found');
     });
 });
+
+opticiansRouter.get(
+  '/:id_optician/openingHours',
+  (req: Request, res: Response) => {
+    const { id_optician } = req.params;
+    OpeningHour.getByOptician(Number(id_optician))
+      .then((openingHours) => {
+        res.status(200).json(openingHours);
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new ErrorHandler(500, 'Opening hours cannot be found');
+      });
+  }
+);
 
 opticiansRouter.post(
   '/',
