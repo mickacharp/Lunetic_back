@@ -112,6 +112,7 @@ const deleteNews = (id_news: number): Promise<boolean> => {
 export {
   validateNews,
   getAllNews,
+  getById,
   addNews,
   newsExists,
   updateNews,
