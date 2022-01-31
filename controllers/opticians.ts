@@ -4,6 +4,7 @@ import IOptician from '../interfaces/IOptician';
 import * as Auth from '../helpers/auth';
 import * as Optician from '../models/optician';
 import * as OpeningHour from '../models/openingHour';
+import * as Order from '../models/order';
 import { ErrorHandler } from '../helpers/errors';
 import { resolve } from 'path';
 import { number } from 'joi';
@@ -51,6 +52,18 @@ opticiansRouter.get(
       });
   }
 );
+
+opticiansRouter.get('/:id_optician/orders', (req: Request, res: Response) => {
+  const { id_optician } = req.params;
+  Order.getOrdersByOptician(Number(id_optician))
+    .then((orders) => {
+      res.status(200).json(orders);
+    })
+    .catch((err) => {
+      console.log(err);
+      throw new ErrorHandler(500, 'Orders cannot be found');
+    });
+});
 
 opticiansRouter.post(
   '/',
