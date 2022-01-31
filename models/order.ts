@@ -23,10 +23,14 @@ const validateOrders = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getAllOrders = (): Promise<IOrders[]> => {
+const getAllOrders = (sortBy: string = ''): Promise<IOrders[]> => {
+  let sql: string = 'SELECT *, id_order as id FROM orders';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IOrders[]>('SELECT * FROM orders')
+    .query<IOrders[]>(sql)
     .then(([results]) => results);
 };
 
@@ -50,7 +54,10 @@ const addOrder = (order: IOrders) => {
     });
 };
 
-const updateOrder = async (id_order: number, order: IOrders): Promise<boolean> => {
+const updateOrder = async (
+  id_order: number,
+  order: IOrders
+): Promise<boolean> => {
   let sql = 'UPDATE orders SET';
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
@@ -75,7 +82,7 @@ const updateOrder = async (id_order: number, order: IOrders): Promise<boolean> =
     sqlValues.push(order.date);
     oneValue = true;
   }
-  
+
   sql += ' WHERE id_order = ?';
   sqlValues.push(id_order);
 
@@ -97,8 +104,7 @@ const orderExists = async (req: Request, res: Response, next: NextFunction) => {
   const orderExists: IOrders = await getById(Number(id_order));
   if (!orderExists) {
     next(new ErrorHandler(404, `This order doesn't exist`));
-  }
-  else {
+  } else {
     next();
   }
 };
@@ -116,5 +122,5 @@ export {
   addOrder,
   updateOrder,
   orderExists,
-  deleteOrder
+  deleteOrder,
 };

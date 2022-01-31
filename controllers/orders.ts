@@ -1,33 +1,35 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const ordersRouter = Router();
 import IOrders from '../interfaces/IOrders';
 import * as Order from '../models/order';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
-ordersRouter.get('/', (req: Request, res: Response) => {
-  Order.getAllOrders().then((orders: Array<IOrders>) => {
-    res.status(200).json(orders);
-  })
-  .catch((err) => {
-    console.log(err);
-    throw new ErrorHandler(500, 'Orders cannot be found');
-  });
+ordersRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  Order.getAllOrders(formatSortString(sortBy))
+    .then((orders: Array<IOrders>) => {
+      res.setHeader(
+        'Content-Range',
+        `orders : 0-${orders.length}/${orders.length + 1}`
+      );
+      res.status(200).json(orders);
+    })
+    .catch((err) => {
+      console.log(err);
+      throw new ErrorHandler(500, 'Orders cannot be found');
+    });
 });
 
-ordersRouter.post(
-  '/',
-  Order.validateOrders,
-  (req: Request, res: Response) => {
-    const order = req.body as IOrders;
-    Order.addOrder(order).then((newOrder) =>
-      res.status(200).json(newOrder)
-    )
+ordersRouter.post('/', Order.validateOrders, (req: Request, res: Response) => {
+  const order = req.body as IOrders;
+  Order.addOrder(order)
+    .then((newOrder) => res.status(200).json(newOrder))
     .catch((err) => {
       console.log(err);
       throw new ErrorHandler(500, 'Order cannot be created');
     });
-  }
-);
+});
 
 ordersRouter.put(
   '/:id_order',
@@ -35,20 +37,18 @@ ordersRouter.put(
   Order.orderExists,
   (req: Request, res: Response) => {
     const { id_order } = req.params;
-    Order.updateOrder(
-      Number(id_order),
-      req.body as IOrders
-    ).then((updateOrder) => {
-      if (updateOrder) {
-        res.status(200).send('Order updated');
-      } else {
-        throw new ErrorHandler(500, 'Order cannot be updated');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Order cannot be modified');
-    });
+    Order.updateOrder(Number(id_order), req.body as IOrders)
+      .then((updateOrder) => {
+        if (updateOrder) {
+          res.status(200).send('Order updated');
+        } else {
+          throw new ErrorHandler(500, 'Order cannot be updated');
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new ErrorHandler(500, 'Order cannot be modified');
+      });
   }
 );
 
@@ -59,13 +59,16 @@ ordersRouter.delete('/:id_order', (req: Request, res: Response) => {
       if (deletedOrder) {
         res.status(200).send('Order deleted');
       } else {
-        res.status(401).send('No order found')
+        res.status(401).send('No order found');
       }
     })
     .catch((err) => {
-    console.log(err);
-    throw new ErrorHandler(500, 'Order cannot be deleted, something wrong happened');
-  });
+      console.log(err);
+      throw new ErrorHandler(
+        500,
+        'Order cannot be deleted, something wrong happened'
+      );
+    });
 });
 
 export default ordersRouter;
