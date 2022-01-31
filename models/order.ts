@@ -23,10 +23,14 @@ const validateOrders = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getAllOrders = (): Promise<IOrders[]> => {
+const getAllOrders = (sortBy: string = ''): Promise<IOrders[]> => {
+  let sql: string = 'SELECT *, id_order as id FROM orders';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IOrders[]>('SELECT * FROM orders')
+    .query<IOrders[]>(sql)
     .then(([results]) => results);
 };
 

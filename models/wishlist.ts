@@ -3,10 +3,14 @@ import { ResultSetHeader } from 'mysql2';
 
 import IWishlist from '../interfaces/IWishlist';
 
-const getAllWishlists = (): Promise<IWishlist[]> => {
+const getAllWishlists = (sortBy: string = ''): Promise<IWishlist[]> => {
+  let sql: string = 'SELECT *, id_wishlist as id FROM wishlists';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IWishlist[]>('SELECT * FROM wishlists')
+    .query<IWishlist[]>(sql)
     .then(([results]) => results);
 };
 

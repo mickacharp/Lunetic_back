@@ -23,10 +23,14 @@ const validateNews = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getAllNews = (): Promise<INews[]> => {
+const getAllNews = (sortBy: string = ''): Promise<INews[]> => {
+  let sql: string = 'SELECT *, id_news as id FROM news';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<INews[]>('SELECT * FROM news')
+    .query<INews[]>(sql)
     .then(([results]) => results);
 };
 

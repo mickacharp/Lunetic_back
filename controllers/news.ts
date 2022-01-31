@@ -1,12 +1,18 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const newsRouter = Router();
 import INews from '../interfaces/INews';
 import * as New from '../models/new';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
-newsRouter.get('/', (req: Request, res: Response) => {
-  New.getAllNews()
+newsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  New.getAllNews(formatSortString(sortBy))
     .then((news: Array<INews>) => {
+      res.setHeader(
+        'Content-Range',
+        `news : 0-${news.length}/${news.length + 1}`
+      );
       res.status(200).json(news);
     })
     .catch((err) => {

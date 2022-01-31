@@ -29,10 +29,14 @@ const validateOpeningHour = (
   }
 };
 
-const getAllOpeningHour = (): Promise<IOpeningHour[]> => {
+const getAllOpeningHour = (sortBy: string = ''): Promise<IOpeningHour[]> => {
+  let sql: string = 'SELECT *, id_opening_hour as id FROM opening_hours';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IOpeningHour[]>('SELECT * FROM opening_hours')
+    .query<IOpeningHour[]>(sql)
     .then(([results]) => results);
 };
 

@@ -5,10 +5,14 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IColor from '../interfaces/IColor';
 
-const getAllColors = (): Promise<IColor[]> => {
+const getAllColors = (sortBy: string = ''): Promise<IColor[]> => {
+  let sql: string = 'SELECT *, id_color as id FROM colors';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IColor[]>('SELECT * FROM colors')
+    .query<IColor[]>(sql)
     .then(([results]) => results);
 };
 

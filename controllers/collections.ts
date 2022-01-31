@@ -3,17 +3,23 @@ const collectionsRouter = Router();
 import ICollection from '../interfaces/ICollection';
 import * as Collection from '../models/collection';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
-collectionsRouter.get('/', (req: Request, res: Response) => {
-  Collection.getAllCollections()
-    .then((collections: Array<ICollection>) => {
-      res.status(200).json(collections);
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Collections cannot be found');
-    });
-});
+collectionsRouter.get(
+  '/',
+  (req: Request, res: Response, next: NextFunction) => {
+    const sortBy: string = req.query.sort as string;
+    Collection.getAllCollections(formatSortString(sortBy))
+      .then((collections: Array<ICollection>) => {
+        res.setHeader(
+          'Content-Range',
+          `collections : 0-${collections.length}/${collections.length + 1}`
+        );
+        res.status(200).json(collections);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 collectionsRouter.get(
   '/:id_collection',

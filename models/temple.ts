@@ -3,10 +3,14 @@ import { ResultSetHeader } from 'mysql2';
 
 import ITemple from '../interfaces/ITemple';
 
-const getAllTemples = (): Promise<ITemple[]> => {
+const getAllTemples = (sortBy: string = ''): Promise<ITemple[]> => {
+  let sql: string = 'SELECT *, id_temple as id FROM temples';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<ITemple[]>('SELECT * FROM temples')
+    .query<ITemple[]>(sql)
     .then(([results]) => results);
 };
 
