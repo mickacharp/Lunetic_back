@@ -1,20 +1,26 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const openingHoursRouter = Router();
 import IOpeningHour from '../interfaces/IOpeningHour';
 import * as OpeningHour from '../models/openingHour';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 import { number } from 'joi';
 
-openingHoursRouter.get('/', (req: Request, res: Response) => {
-  OpeningHour.getAllOpeningHour()
-    .then((openingHours: Array<IOpeningHour>) => {
-      res.status(200).json(openingHours);
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Opening hours cannot be found');
-    });
-});
+openingHoursRouter.get(
+  '/',
+  (req: Request, res: Response, next: NextFunction) => {
+    const sortBy: string = req.query.sort as string;
+    OpeningHour.getAllOpeningHour(formatSortString(sortBy))
+      .then((openingHours: Array<IOpeningHour>) => {
+        res.setHeader(
+          'Content-Range',
+          `openingHours : 0-${openingHours.length}/${openingHours.length + 1}`
+        );
+        res.status(200).json(openingHours);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 openingHoursRouter.post(
   '/',
