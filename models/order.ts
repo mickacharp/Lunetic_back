@@ -34,6 +34,15 @@ const getAllOrders = (sortBy: string = ''): Promise<IOrders[]> => {
     .then(([results]) => results);
 };
 
+const getOrdersByOptician = (id_optician: number): Promise<IOrders[]> => {
+  return connection
+    .promise()
+    .query<IOrders[]>('SELECT * FROM orders WHERE id_optician = ?', [
+      id_optician,
+    ])
+    .then(([results]) => results);
+};
+
 const addOrder = (order: IOrders) => {
   return connection
     .promise()
@@ -123,4 +132,5 @@ export {
   updateOrder,
   orderExists,
   deleteOrder,
+  getOrdersByOptician,
 };

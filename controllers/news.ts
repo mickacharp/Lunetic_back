@@ -21,6 +21,21 @@ newsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
     });
 });
 
+newsRouter.get('/:id_news', (req: Request, res: Response) => {
+  New.getById(Number(req.params.id_news))
+    .then((news) => {
+      if (news) {
+        res.status(200).json(news);
+      } else {
+        res.status(401).send('No news found');
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      throw new ErrorHandler(500, 'news cannot be found');
+    });
+});
+
 newsRouter.post('/', New.validateNews, (req: Request, res: Response) => {
   const news = req.body as INews;
   New.addNews(news)
