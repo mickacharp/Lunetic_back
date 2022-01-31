@@ -15,10 +15,7 @@ ordersRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
       );
       res.status(200).json(orders);
     })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Orders cannot be found');
-    });
+    .catch((err) => next(err));
 });
 
 ordersRouter.post('/', Order.validateOrders, (req: Request, res: Response) => {
