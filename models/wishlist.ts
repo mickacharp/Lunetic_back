@@ -32,16 +32,17 @@ const addWishlist = (wishlist: IWishlist) => {
   return connection
     .promise()
     .query<ResultSetHeader>(
-      'INSERT INTO wishlists (id_optician, name, date) VALUES (?,?,CURRENT_TIMESTAMP)',
-      [wishlist.id_optician, wishlist.name]
+      'INSERT INTO wishlists (id_optician, name, date) VALUES (?,?,?)',
+      [wishlist.id_optician, wishlist.name, wishlist.date]
     )
     .then(([results]) => {
       const id_wishlist = results.insertId;
-      const { id_optician, name } = wishlist;
+      const { id_optician, name, date } = wishlist;
       return {
         id_wishlist,
         id_optician,
         name,
+        date,
       };
     });
 };
