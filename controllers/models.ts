@@ -1,19 +1,24 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const modelsRouter = Router();
 import * as Model from '../models/model';
 import IModel from '../interfaces/IModel';
 
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
 ///////////// GET ALL ///////////////
 
-modelsRouter.get('/', (req: Request, res: Response) => {
-  Model.getAllModels()
-    .then((models) => res.status(200).json(models))
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'models cannot be found');
-    });
+modelsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  Model.getAllModels(formatSortString(sortBy))
+    .then((models: IModel[]) => {
+      res.setHeader(
+        'Content-Range',
+        `models : 0-${models.length}/${models.length + 1}`
+      );
+      res.status(200).json(models);
+    })
+    .catch((err) => next(err));
 });
 
 ///////////// GET ONE ///////////////

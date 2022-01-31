@@ -105,7 +105,7 @@ const opticianExists = async (
 ) => {
   // Récupèrer l'id optician de req.params
   const { id_optician } = req.params;
-  // Vérifier si le optician existe
+  // Vérifier si l'optician existe
   const opticianExists: IOptician = await getById(Number(id_optician));
   // Si non, => erreur
   if (!opticianExists) {
@@ -117,10 +117,14 @@ const opticianExists = async (
   }
 };
 
-const getAllOpticians = (): Promise<IOptician[]> => {
+const getAllOpticians = (sortBy: string = ''): Promise<IOptician[]> => {
+  let sql: string = 'SELECT *, id_optician as id FROM opticians';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IOptician[]>('SELECT * FROM opticians')
+    .query<IOptician[]>(sql)
     .then(([results]) => results);
 };
 

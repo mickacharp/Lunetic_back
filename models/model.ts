@@ -2,22 +2,21 @@ import connection from '../db-config';
 import IModel from '../interfaces/IModel';
 import { ResultSetHeader } from 'mysql2';
 
-const getAllModels = (): Promise<IModel[]> => {
+const getAllModels = (sortBy: string = ''): Promise<IModel[]> => {
+  let sql: string = 'SELECT *, id_model as id FROM models';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IModel[]>(
-      'select * from models'
-    )
+    .query<IModel[]>(sql)
     .then(([results]) => results);
 };
 
 const getById = (id_model: number): Promise<IModel> => {
   return connection
     .promise()
-    .query<IModel[]>(
-      'select * from models where id_model=?',
-      [id_model]
-    )
+    .query<IModel[]>('select * from models where id_model=?', [id_model])
     .then(([results]) => results[0]);
 };
 
@@ -35,11 +34,29 @@ const addModel = (model: IModel) => {
     .promise()
     .query<ResultSetHeader>(
       'INSERT INTO models (name, id_collection, main_img, img_2, img_3, img_4, img_5, text) VALUES (?,?,?,?,?,?,?,?)',
-      [model.name, model.id_collection, model.main_img, model.img_2, model.img_3, model.img_4, model.img_5, model.text]
+      [
+        model.name,
+        model.id_collection,
+        model.main_img,
+        model.img_2,
+        model.img_3,
+        model.img_4,
+        model.img_5,
+        model.text,
+      ]
     )
     .then(([results]) => {
       const id_model = results.insertId;
-      const { name, id_collection, main_img, img_2, img_3, img_4, img_5, text } = model;
+      const {
+        name,
+        id_collection,
+        main_img,
+        img_2,
+        img_3,
+        img_4,
+        img_5,
+        text,
+      } = model;
       return {
         id_model,
         name,
@@ -49,12 +66,15 @@ const addModel = (model: IModel) => {
         img_3,
         img_4,
         img_5,
-        text
+        text,
       };
     });
 };
 
-const updateModel = async (id_model: number, model: IModel): Promise<boolean> => {
+const updateModel = async (
+  id_model: number,
+  model: IModel
+): Promise<boolean> => {
   let sql = 'UPDATE models SET';
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
@@ -99,7 +119,7 @@ const updateModel = async (id_model: number, model: IModel): Promise<boolean> =>
     sqlValues.push(model.text);
     oneValue = true;
   }
-  
+
   sql += ' WHERE id_model = ?';
   sqlValues.push(id_model);
 

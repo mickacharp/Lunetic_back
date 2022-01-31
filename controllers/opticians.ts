@@ -1,24 +1,27 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const opticiansRouter = Router();
 import IOptician from '../interfaces/IOptician';
 import * as Auth from '../helpers/auth';
 import * as Optician from '../models/optician';
 import * as OpeningHour from '../models/openingHour';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 import { resolve } from 'path';
 import { number } from 'joi';
 
 ///////////// OPTICIAN ///////////////
 
-opticiansRouter.get('/', (req: Request, res: Response) => {
-  Optician.getAllOpticians()
+opticiansRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  Optician.getAllOpticians(formatSortString(sortBy))
     .then((opticians: Array<IOptician>) => {
+      res.setHeader(
+        'Content-Range',
+        `opticians : 0-${opticians.length}/${opticians.length + 1}`
+      );
       res.status(200).json(opticians);
     })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Opticians cannot be found');
-    });
+    .catch((err) => next(err));
 });
 
 opticiansRouter.get('/:id_optician', (req: Request, res: Response) => {
