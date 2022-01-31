@@ -5,7 +5,11 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOpeningHour from '../interfaces/IOpeningHour';
 
-const validateOpeningHour = (req: Request, res: Response, next: NextFunction) => {
+const validateOpeningHour = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   let required: Joi.PresenceMode = 'optional';
   if (req.method === 'POST') {
     required = 'required';
@@ -25,10 +29,14 @@ const validateOpeningHour = (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-const getAllOpeningHour = (): Promise<IOpeningHour[]> => {
+const getAllOpeningHour = (sortBy: string = ''): Promise<IOpeningHour[]> => {
+  let sql: string = 'SELECT *, id_opening_hour as id FROM opening_hours';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IOpeningHour[]>('SELECT * FROM opening_hours')
+    .query<IOpeningHour[]>(sql)
     .then(([results]) => results);
 };
 
@@ -43,7 +51,7 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
         openingHours.start_afternoon,
         openingHours.end_afternoon,
         openingHours.id_optician,
-        openingHours.id_day
+        openingHours.id_day,
       ]
     )
     .then(([results]) => {
@@ -54,7 +62,7 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
         start_afternoon,
         end_afternoon,
         id_optician,
-        id_day
+        id_day,
       } = openingHours;
       return {
         id_opening_hours,
@@ -63,7 +71,7 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
         start_afternoon,
         end_afternoon,
         id_optician,
-        id_day
+        id_day,
       };
     });
 };
@@ -71,22 +79,43 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
 const getById = (id_opening_hour: number): Promise<IOpeningHour> => {
   return connection
     .promise()
-    .query<IOpeningHour[]>('SELECT * FROM opening_hours WHERE id_opening_hour = ?', [id_opening_hour])
+    .query<IOpeningHour[]>(
+      'SELECT * FROM opening_hours WHERE id_opening_hour = ?',
+      [id_opening_hour]
+    )
     .then(([results]) => results[0]);
 };
 
-const openingHourExists = async (req: Request, res: Response, next: NextFunction) => {
+const getByOptician = (id_optician: number): Promise<IOpeningHour> => {
+  return connection
+    .promise()
+    .query<IOpeningHour[0]>(
+      'SELECT * FROM opening_hours WHERE id_optician = ?',
+      [id_optician]
+    )
+    .then((results) => results[0]);
+};
+
+const openingHourExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id_opening_hour } = req.params;
-  const openingHourExists: IOpeningHour = await getById(Number(id_opening_hour));
+  const openingHourExists: IOpeningHour = await getById(
+    Number(id_opening_hour)
+  );
   if (!openingHourExists) {
     next(new ErrorHandler(404, `This opening hour doesn't exist`));
-  }
-  else {
+  } else {
     next();
   }
 };
 
-const updateOpeningHour = async (id_opening_hour: number, openingHour: IOpeningHour): Promise<boolean> => {
+const updateOpeningHour = async (
+  id_opening_hour: number,
+  openingHour: IOpeningHour
+): Promise<boolean> => {
   let sql = 'UPDATE opening_hours SET';
   const sqlValues: Array<string | number> = [];
   let oneValue = false;
@@ -121,7 +150,7 @@ const updateOpeningHour = async (id_opening_hour: number, openingHour: IOpeningH
     sqlValues.push(openingHour.id_day);
     oneValue = true;
   }
-  
+
   sql += ' WHERE id_opening_hour = ?';
   sqlValues.push(id_opening_hour);
 
@@ -134,7 +163,10 @@ const updateOpeningHour = async (id_opening_hour: number, openingHour: IOpeningH
 const deleteOpeningHour = (id_opening_hour: number): Promise<boolean> => {
   return connection
     .promise()
-    .query<ResultSetHeader>('DELETE FROM opening_hours WHERE id_opening_hour = ?', [id_opening_hour])
+    .query<ResultSetHeader>(
+      'DELETE FROM opening_hours WHERE id_opening_hour = ?',
+      [id_opening_hour]
+    )
     .then(([results]) => results.affectedRows === 1);
 };
 
@@ -144,5 +176,6 @@ export {
   addOpeningHours,
   openingHourExists,
   updateOpeningHour,
-  deleteOpeningHour
-}
+  deleteOpeningHour,
+  getByOptician,
+};
