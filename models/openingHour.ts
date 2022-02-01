@@ -29,8 +29,8 @@ const validateOpeningHour = (
   }
 };
 
-const getAllOpeningHour = (sortBy: string = ''): Promise<IOpeningHour[]> => {
-  let sql: string = 'SELECT *, id_opening_hour as id FROM opening_hours';
+const getAllOpeningHour = (sortBy = ''): Promise<IOpeningHour[]> => {
+  let sql = 'SELECT *, id_opening_hour as id FROM opening_hours';
   if (sortBy) {
     sql += ` ORDER BY ${sortBy}`;
   }
@@ -93,7 +93,7 @@ const getByOptician = (id_optician: number): Promise<IOpeningHour> => {
       'SELECT * FROM opening_hours WHERE id_optician = ?',
       [id_optician]
     )
-    .then((results) => results[0]);
+    .then((results: IOpeningHour[]) => results[0]);
 };
 
 const openingHourExists = async (

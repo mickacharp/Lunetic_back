@@ -29,7 +29,7 @@ authRouter.post('/', (req: Request, res: Response, next: NextFunction) => {
             });
             res.json({
               id_optician: optician.id_optician,
-              admin: optician.admin,
+              admin: optician.admin as number,
             });
           } else throw new ErrorHandler(401, 'Invalid Credentials');
         }

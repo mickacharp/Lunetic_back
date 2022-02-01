@@ -25,7 +25,6 @@ app.use(cookieParser());
 
 setupRoutes(app);
 
-// A mettre à la fin pour gèrer les erreurs qui sortiront des routes
 app.use(handleError);
 
 app.listen(port, () => {

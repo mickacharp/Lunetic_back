@@ -2,8 +2,8 @@ import connection from '../db-config';
 import IModel from '../interfaces/IModel';
 import { ResultSetHeader } from 'mysql2';
 
-const getAllModels = (sortBy: string = ''): Promise<IModel[]> => {
-  let sql: string = 'SELECT *, id_model as id FROM models';
+const getAllModels = (sortBy = ''): Promise<IModel[]> => {
+  let sql = 'SELECT *, id_model as id FROM models';
   if (sortBy) {
     sql += ` ORDER BY ${sortBy}`;
   }

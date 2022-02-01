@@ -4,7 +4,6 @@ import IOpeningHour from '../interfaces/IOpeningHour';
 import * as OpeningHour from '../models/openingHour';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
-import { number } from 'joi';
 
 openingHoursRouter.get(
   '/',

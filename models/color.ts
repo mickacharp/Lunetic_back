@@ -5,8 +5,8 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IColor from '../interfaces/IColor';
 
-const getAllColors = (sortBy: string = ''): Promise<IColor[]> => {
-  let sql: string = 'SELECT *, id_color as id FROM colors';
+const getAllColors = (sortBy = ''): Promise<IColor[]> => {
+  let sql = 'SELECT *, id_color as id FROM colors';
   if (sortBy) {
     sql += ` ORDER BY ${sortBy}`;
   }

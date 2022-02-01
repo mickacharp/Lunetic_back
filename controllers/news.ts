@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response, Router } from 'express';
+import { Request, Response, Router } from 'express';
 const newsRouter = Router();
 import INews from '../interfaces/INews';
 import * as New from '../models/new';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
-newsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+newsRouter.get('/', (req: Request, res: Response ) => {
   const sortBy: string = req.query.sort as string;
   New.getAllNews(formatSortString(sortBy))
     .then((news: Array<INews>) => {
@@ -52,7 +52,6 @@ newsRouter.put(
   New.newsExists,
   (req: Request, res: Response) => {
     const { id_news } = req.params;
-    console.log(id_news);
     New.updateNews(Number(id_news), req.body as INews)
       .then((updatedNews) => {
         if (updatedNews) {

@@ -3,8 +3,8 @@ import { ResultSetHeader } from 'mysql2';
 
 import IWishlist from '../interfaces/IWishlist';
 
-const getAllWishlists = (sortBy: string = ''): Promise<IWishlist[]> => {
-  let sql: string = 'SELECT *, id_wishlist as id FROM wishlists';
+const getAllWishlists = (sortBy = ''): Promise<IWishlist[]> => {
+  let sql = 'SELECT *, id_wishlist as id FROM wishlists';
   if (sortBy) {
     sql += ` ORDER BY ${sortBy}`;
   }

@@ -3,8 +3,8 @@ import { ResultSetHeader } from 'mysql2';
 
 import ITemple from '../interfaces/ITemple';
 
-const getAllTemples = (sortBy: string = ''): Promise<ITemple[]> => {
-  let sql: string = 'SELECT *, id_temple as id FROM temples';
+const getAllTemples = (sortBy = ''): Promise<ITemple[]> => {
+  let sql = 'SELECT *, id_temple as id FROM temples';
   if (sortBy) {
     sql += ` ORDER BY ${sortBy}`;
   }

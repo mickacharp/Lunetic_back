@@ -6,10 +6,6 @@ import { ErrorHandler } from '../helpers/errors';
 import INews from '../interfaces/INews';
 
 const validateNews = (req: Request, res: Response, next: NextFunction) => {
-  let required: Joi.PresenceMode = 'optional';
-  if (req.method === 'POST') {
-    required = 'required';
-  }
   const errors = Joi.object({
     title: Joi.string().max(255).allow('', null),
     subtitle: Joi.string().max(255).allow('', null),
@@ -23,8 +19,8 @@ const validateNews = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getAllNews = (sortBy: string = ''): Promise<INews[]> => {
-  let sql: string = 'SELECT *, id_news as id FROM news';
+const getAllNews = (sortBy = ''): Promise<INews[]> => {
+  let sql = 'SELECT *, id_news as id FROM news';
   if (sortBy) {
     sql += ` ORDER BY ${sortBy}`;
   }

@@ -7,8 +7,6 @@ import * as OpeningHour from '../models/openingHour';
 import * as Order from '../models/order';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
-import { resolve } from 'path';
-import { number } from 'joi';
 
 ///////////// OPTICIAN ///////////////
 
@@ -120,6 +118,5 @@ opticiansRouter.delete('/:id_optician', (req: Request, res: Response) => {
       throw new ErrorHandler(500, 'Optician cannot be updated');
     });
 });
-// A gérer : la suppression d'un compte par l'admin
 
 export default opticiansRouter;
