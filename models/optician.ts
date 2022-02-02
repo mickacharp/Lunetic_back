@@ -64,6 +64,11 @@ const validateOptician = (req: Request, res: Response, next: NextFunction) => {
     siret: Joi.string().max(25).allow('', null),
     vat_number: Joi.string().max(45).allow('', null),
     link_picture: Joi.string().max(255).allow('', null),
+    lat: Joi.number().optional(),
+    lng: Joi.number().optional(),
+    admin: Joi.number().min(0).max(1).optional(),
+    id_optician: Joi.number().optional(),
+    id: Joi.number().optional(),
   }).validate(req.body, { abortEarly: false }).error;
   if (errors) {
     next(new ErrorHandler(422, errors.message));
@@ -75,7 +80,7 @@ const validateOptician = (req: Request, res: Response, next: NextFunction) => {
 const validateLogin = (req: Request, res: Response, next: NextFunction) => {
   const errors = Joi.object({
     email: Joi.string().email().max(255).required(),
-    password: Joi.string().min(8).max(15).required(),
+    password: Joi.string().min(8).max(100).required(),
   }).validate(req.body, { abortEarly: false }).error;
   if (errors) {
     next(new ErrorHandler(422, errors.message));
@@ -103,8 +108,7 @@ const opticianExists = async (
   const opticianExists: IOptician = await getById(Number(id_optician));
   if (!opticianExists) {
     next(new ErrorHandler(404, `This optician doesn't exist`));
-  }
-  else {
+  } else {
     next();
   }
 };
@@ -123,9 +127,10 @@ const getAllOpticians = (sortBy = ''): Promise<IOptician[]> => {
 const getById = (id_optician: number): Promise<IOptician> => {
   return connection
     .promise()
-    .query<IOptician[]>('SELECT * FROM opticians WHERE id_optician = ?', [
-      id_optician,
-    ])
+    .query<IOptician[]>(
+      'SELECT *, id_optician as id FROM opticians WHERE id_optician = ?',
+      [id_optician]
+    )
     .then(([results]) => results[0]);
 };
 
@@ -146,7 +151,7 @@ const addOptician = async (optician: IOptician) => {
   return connection
     .promise()
     .query<ResultSetHeader>(
-      'INSERT INTO opticians (firstname, lastname,company, address, other_address, postal_code, city, email, mobile_phone, password, website, home_phone, finess_code, siret, vat_number, link_picture, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO opticians (firstname, lastname,company, address, other_address, postal_code, city, email, mobile_phone, password, website, home_phone, finess_code, siret, vat_number, link_picture, lat, lng, admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         optician.firstname,
         optician.lastname,
@@ -166,6 +171,7 @@ const addOptician = async (optician: IOptician) => {
         optician.link_picture,
         lat,
         lng,
+        optician.admin,
       ]
     )
     .then(([results]) => {
@@ -186,6 +192,7 @@ const addOptician = async (optician: IOptician) => {
         siret,
         vat_number,
         link_picture,
+        admin,
       } = optician;
       return {
         id_optician,
@@ -207,6 +214,7 @@ const addOptician = async (optician: IOptician) => {
         link_picture,
         lat,
         lng,
+        admin,
       };
     });
 };
@@ -311,6 +319,11 @@ const updateOptician = async (
   if (optician.link_picture) {
     sql += oneValue ? ', link_picture = ? ' : ' link_picture = ? ';
     sqlValues.push(optician.link_picture);
+    oneValue = true;
+  }
+  if (optician.admin) {
+    sql += oneValue ? ', admin = ? ' : ' admin = ? ';
+    sqlValues.push(optician.admin);
     oneValue = true;
   }
 

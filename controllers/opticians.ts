@@ -84,22 +84,25 @@ opticiansRouter.post(
 opticiansRouter.put(
   '/:id_optician',
   Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
   Optician.validateOptician,
   Optician.opticianExists,
   (req: Request, res: Response) => {
-    req.opticianInfo &&
-      Optician.updateOptician(req.opticianInfo.id, req.body as IOptician)
-        .then((updatedOptician) => {
-          if (updatedOptician) {
-            res.status(200).send('optician updated');
-          } else {
-            throw new ErrorHandler(500, 'Optician cannot be updated');
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          throw new ErrorHandler(500, 'Opticians cannot be modified');
-        });
+    const { id_optician } = req.params;
+    Optician.updateOptician(Number(id_optician), req.body as IOptician)
+      .then((updatedOptician) => {
+        if (updatedOptician) {
+          Optician.getById(Number(id_optician)).then(
+            (optician) => res.status(200).send(optician) // react-admin needs this response
+          );
+        } else {
+          throw new ErrorHandler(500, 'Optician cannot be updated');
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new ErrorHandler(500, 'Opticians cannot be modified');
+      });
   }
 );
 
