@@ -5,7 +5,7 @@ import { handleError } from './helpers/errors';
 import setupRoutes from './controllers';
 import cors from 'cors';
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3000;
 
 const corsOptions: cors.CorsOptions = {

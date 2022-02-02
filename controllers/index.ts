@@ -10,6 +10,9 @@ import openingHoursRouter from './openingHours';
 import ordersRouter from './orders';
 import modelsRouter from './models';
 import daysRouter from './days';
+import contactGuestRouter from './contactGuest';
+import contactProRouter from './contactPro';
+import contactConfirmationRouter from './contactConfirmation';
 import modelsTemplesColorsRouter from './modelsTemplesColors';
 
 const setupRoutes = (app: express.Application) => {
@@ -24,6 +27,9 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/orders', ordersRouter);
   app.use('/api/models', modelsRouter);
   app.use('/api/days', daysRouter);
+  app.use('/api/contact-guest', contactGuestRouter);
+  app.use('/api/contact-pro', contactProRouter);
+  app.use('/api/contact-confirmation', contactConfirmationRouter);
   app.use('/api/models-wishlist', modelsTemplesColorsRouter);
 };
 
