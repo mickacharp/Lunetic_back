@@ -5,7 +5,7 @@ import { ResultSetHeader } from 'mysql2';
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOptician from '../interfaces/IOptician';
-const NodeGeocoder = require('node-geocoder');
+const NodeGeocoder: Function = require('node-geocoder');
 import apiKey from '../api';
 
 const hashingOptions: Options & { raw?: false } = {
@@ -85,15 +85,11 @@ const validateLogin = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const emailIsFree = async (req: Request, res: Response, next: NextFunction) => {
-  // Récupèrer l'email dans le req.body
   const optician = req.body as IOptician;
-  // Vérifier si l'email appartient déjà à un user
   const opticianExists: IOptician = await getByEmail(optician.email);
-  // Si oui => erreur
   if (opticianExists) {
     next(new ErrorHandler(409, `This optician already exists`));
   } else {
-    // Si non => next
     next();
   }
 };
@@ -103,24 +99,24 @@ const opticianExists = async (
   res: Response,
   next: NextFunction
 ) => {
-  // Récupèrer l'id optician de req.params
   const { id_optician } = req.params;
-  // Vérifier si le optician existe
   const opticianExists: IOptician = await getById(Number(id_optician));
-  // Si non, => erreur
   if (!opticianExists) {
     next(new ErrorHandler(404, `This optician doesn't exist`));
   }
-  // Si oui => next
   else {
     next();
   }
 };
 
-const getAllOpticians = (): Promise<IOptician[]> => {
+const getAllOpticians = (sortBy = ''): Promise<IOptician[]> => {
+  let sql = 'SELECT *, id_optician as id FROM opticians';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IOptician[]>('SELECT * FROM opticians')
+    .query<IOptician[]>(sql)
     .then(([results]) => results);
 };
 
@@ -144,8 +140,8 @@ const addOptician = async (optician: IOptician) => {
   const hashedPassword = await hashPassword(optician.password);
 
   const result = await getGeocode(optician.address, optician.postal_code);
-  const lat = result[0].latitude;
-  const lng = result[0].longitude;
+  const lat: number = result[0].latitude as number;
+  const lng: number = result[0].longitude as number;
 
   return connection
     .promise()
@@ -184,7 +180,6 @@ const addOptician = async (optician: IOptician) => {
         city,
         email,
         mobile_phone,
-        password,
         website,
         home_phone,
         finess_code,
@@ -226,8 +221,8 @@ const updateOptician = async (
 
   if (optician.address || optician.postal_code) {
     const result = await getGeocode(optician.address, optician.postal_code);
-    const lat = result[0].latitude;
-    const lng = result[0].longitude;
+    const lat: number = result[0].latitude;
+    const lng: number = result[0].longitude;
     sql += ' lat = ? ';
     sqlValues.push(lat);
     sql += oneValue ? ', lng = ? ' : ', lng=?';

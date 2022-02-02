@@ -3,16 +3,19 @@ const colorsRouter = Router();
 import IColor from '../interfaces/IColor';
 import * as Color from '../models/color';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
-colorsRouter.get('/', (req: Request, res: Response) => {
-  Color.getAllColors()
+colorsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  Color.getAllColors(formatSortString(sortBy))
     .then((colors: Array<IColor>) => {
+      res.setHeader(
+        'Content-Range',
+        `colors : 0-${colors.length}/${colors.length + 1}`
+      );
       res.status(200).json(colors);
     })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Colors cannot be found');
-    });
+    .catch((err) => next(err));
 });
 
 colorsRouter.get(

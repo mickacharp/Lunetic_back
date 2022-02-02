@@ -13,6 +13,7 @@ import daysRouter from './days';
 import contactGuestRouter from './contactGuest';
 import contactProRouter from './contactPro';
 import contactConfirmationRouter from './contactConfirmation';
+import modelsTemplesColorsRouter from './modelsTemplesColors';
 
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
@@ -29,6 +30,7 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/contact-guest', contactGuestRouter);
   app.use('/api/contact-pro', contactProRouter);
   app.use('/api/contact-confirmation', contactConfirmationRouter);
+  app.use('/api/models-wishlist', modelsTemplesColorsRouter);
 };
 
 export default setupRoutes;

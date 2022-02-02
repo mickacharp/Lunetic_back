@@ -3,10 +3,14 @@ import { ResultSetHeader } from 'mysql2';
 
 import IWishlist from '../interfaces/IWishlist';
 
-const getAllWishlists = (): Promise<IWishlist[]> => {
+const getAllWishlists = (sortBy = ''): Promise<IWishlist[]> => {
+  let sql = 'SELECT *, id_wishlist as id FROM wishlists';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<IWishlist[]>('SELECT * FROM wishlists')
+    .query<IWishlist[]>(sql)
     .then(([results]) => results);
 };
 
@@ -32,16 +36,17 @@ const addWishlist = (wishlist: IWishlist) => {
   return connection
     .promise()
     .query<ResultSetHeader>(
-      'INSERT INTO wishlists (id_optician, name, date) VALUES (?,?,CURRENT_TIMESTAMP)',
-      [wishlist.id_optician, wishlist.name]
+      'INSERT INTO wishlists (id_optician, name, date) VALUES (?,?,?)',
+      [wishlist.id_optician, wishlist.name, wishlist.date]
     )
     .then(([results]) => {
       const id_wishlist = results.insertId;
-      const { id_optician, name } = wishlist;
+      const { id_optician, name, date } = wishlist;
       return {
         id_wishlist,
         id_optician,
         name,
+        date,
       };
     });
 };

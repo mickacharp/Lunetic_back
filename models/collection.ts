@@ -5,10 +5,14 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import ICollection from '../interfaces/ICollection';
 
-const getAllCollections = (): Promise<ICollection[]> => {
+const getAllCollections = (sortBy = ''): Promise<ICollection[]> => {
+  let sql = 'SELECT *, id_collection as id FROM collections';
+  if (sortBy) {
+    sql += ` ORDER BY ${sortBy}`;
+  }
   return connection
     .promise()
-    .query<ICollection[]>('SELECT * FROM collections')
+    .query<ICollection[]>(sql)
     .then(([results]) => results);
 };
 
