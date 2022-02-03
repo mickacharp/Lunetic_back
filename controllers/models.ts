@@ -23,20 +23,20 @@ modelsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
 
 ///////////// GET ONE ///////////////
 
-modelsRouter.get('/:id_model', (req: Request, res: Response) => {
-  Model.getById(Number(req.params.id_model))
-    .then((model) => {
-      if (model) {
-        res.status(200).json(model);
-      } else {
-        res.status(401).send('No model found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'model cannot be found');
-    });
-});
+modelsRouter.get(
+  '/:id_model',
+  (req: Request, res: Response, next: NextFunction) => {
+    Model.getById(Number(req.params.id_model))
+      .then((model) => {
+        if (model) {
+          res.status(200).json(model);
+        } else {
+          res.status(401).send('No model found');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 /////////////////// POST ///////////////////
 
