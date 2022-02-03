@@ -5,6 +5,7 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOpeningHour from '../interfaces/IOpeningHour';
 
+//////////// OpeningHour middlewares /////////////
 const validateOpeningHour = (
   req: Request,
   res: Response,
@@ -21,6 +22,8 @@ const validateOpeningHour = (
     end_afternoon: Joi.string().max(45).allow('', null),
     id_optician: Joi.number().presence(required),
     id_day: Joi.number().presence(required),
+    id_opening_hour: Joi.number().optional(),
+    id: Joi.number().optional(),
   }).validate(req.body, { abortEarly: false }).error;
   if (errors) {
     next(new ErrorHandler(422, errors.message));
@@ -29,6 +32,24 @@ const validateOpeningHour = (
   }
 };
 
+const openingHourExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id_opening_hour } = req.params;
+  const openingHourExists: IOpeningHour = await getById(
+    Number(id_opening_hour)
+  );
+  if (!openingHourExists) {
+    next(new ErrorHandler(404, `This opening hour doesn't exist`));
+  } else {
+    req.record = openingHourExists; // because we need deleted record to be sent after a delete in react-admin
+    next();
+  }
+};
+
+//////////// CRUD models of opening hour /////////////
 const getAllOpeningHour = (sortBy = ''): Promise<IOpeningHour[]> => {
   let sql = 'SELECT *, id_opening_hour as id FROM opening_hours';
   if (sortBy) {
@@ -38,6 +59,26 @@ const getAllOpeningHour = (sortBy = ''): Promise<IOpeningHour[]> => {
     .promise()
     .query<IOpeningHour[]>(sql)
     .then(([results]) => results);
+};
+
+const getById = (id_opening_hour: number): Promise<IOpeningHour> => {
+  return connection
+    .promise()
+    .query<IOpeningHour[]>(
+      'SELECT *, id_opening_hour as id FROM opening_hours WHERE id_opening_hour = ?',
+      [id_opening_hour]
+    )
+    .then(([results]) => results[0]);
+};
+
+const getByOptician = (id_optician: number): Promise<IOpeningHour> => {
+  return connection
+    .promise()
+    .query<IOpeningHour[0]>(
+      'SELECT *, id_opening_hour as id FROM opening_hours WHERE id_optician = ?',
+      [id_optician]
+    )
+    .then((results: IOpeningHour[]) => results[0]);
 };
 
 const addOpeningHours = (openingHours: IOpeningHour) => {
@@ -55,7 +96,7 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
       ]
     )
     .then(([results]) => {
-      const id_opening_hours = results.insertId;
+      const id_opening_hour = results.insertId;
       const {
         start_morning,
         end_morning,
@@ -65,7 +106,7 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
         id_day,
       } = openingHours;
       return {
-        id_opening_hours,
+        id_opening_hour,
         start_morning,
         end_morning,
         start_afternoon,
@@ -74,42 +115,6 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
         id_day,
       };
     });
-};
-
-const getById = (id_opening_hour: number): Promise<IOpeningHour> => {
-  return connection
-    .promise()
-    .query<IOpeningHour[]>(
-      'SELECT * FROM opening_hours WHERE id_opening_hour = ?',
-      [id_opening_hour]
-    )
-    .then(([results]) => results[0]);
-};
-
-const getByOptician = (id_optician: number): Promise<IOpeningHour> => {
-  return connection
-    .promise()
-    .query<IOpeningHour[0]>(
-      'SELECT * FROM opening_hours WHERE id_optician = ?',
-      [id_optician]
-    )
-    .then((results: IOpeningHour[]) => results[0]);
-};
-
-const openingHourExists = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { id_opening_hour } = req.params;
-  const openingHourExists: IOpeningHour = await getById(
-    Number(id_opening_hour)
-  );
-  if (!openingHourExists) {
-    next(new ErrorHandler(404, `This opening hour doesn't exist`));
-  } else {
-    next();
-  }
 };
 
 const updateOpeningHour = async (
@@ -172,10 +177,11 @@ const deleteOpeningHour = (id_opening_hour: number): Promise<boolean> => {
 
 export {
   validateOpeningHour,
-  getAllOpeningHour,
-  addOpeningHours,
   openingHourExists,
+  getAllOpeningHour,
+  getById,
+  getByOptician,
+  addOpeningHours,
   updateOpeningHour,
   deleteOpeningHour,
-  getByOptician,
 };
