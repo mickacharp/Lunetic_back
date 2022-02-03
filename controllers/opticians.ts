@@ -5,6 +5,7 @@ import * as Auth from '../helpers/auth';
 import * as Optician from '../models/optician';
 import * as OpeningHour from '../models/openingHour';
 import * as Order from '../models/order';
+import * as Wishlist from '../models/wishlist';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
@@ -60,6 +61,30 @@ opticiansRouter.get(
         res.status(200).json(orders);
       })
       .catch((err) => next(err));
+  }
+);
+
+// Get all wishlists of one specific optician
+opticiansRouter.get(
+  '/:id_optician/wishlists',
+  (req: Request, res: Response) => {
+    const { id_optician } = req.params;
+    Wishlist.getWishlistsByOptician(Number(id_optician))
+      .then((wishlists) => {
+        if (wishlists) {
+          res.status(200).json(wishlists);
+        } else {
+          res
+            .status(401)
+            .send(
+              `Wishlists belonging to optician ${id_optician} can't be found`
+            );
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        throw new ErrorHandler(500, 'Wishlists cannot be found');
+      });
   }
 );
 

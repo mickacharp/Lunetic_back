@@ -33,6 +33,23 @@ modelsTemplesColorsRouter.get('/:id_model', (req: Request, res: Response) => {
     });
 });
 
+///////////// GET BY ID WISHLIST ///////////////
+
+modelsTemplesColorsRouter.get('/wishlists/:id_wishlist', (req: Request, res: Response) => {
+  ModelTempleColor.getByIdWishlist(Number(req.params.id_wishlist))
+  .then((wishlist) => {
+    if (wishlist) {
+      res.status(200).json(wishlist);
+    } else {
+      res.status(401).send('No wishlist found');
+    }
+  })
+  .catch((err) => {
+    console.log(err);
+    throw new ErrorHandler(500, 'Wishlist cannot be found');
+  });
+});
+
 /////////////////// POST ///////////////////
 
 modelsTemplesColorsRouter.post('/', (req: Request, res: Response) => {
