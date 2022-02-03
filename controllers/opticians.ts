@@ -40,6 +40,7 @@ opticiansRouter.get(
   }
 );
 
+// Get all opening hours of one specific optician
 opticiansRouter.get(
   '/:id_optician/openingHours',
   (req: Request, res: Response, next: NextFunction) => {
@@ -52,6 +53,7 @@ opticiansRouter.get(
   }
 );
 
+// Get all orders of one specific optician
 opticiansRouter.get(
   '/:id_optician/orders',
   (req: Request, res: Response, next: NextFunction) => {
@@ -67,7 +69,7 @@ opticiansRouter.get(
 // Get all wishlists of one specific optician
 opticiansRouter.get(
   '/:id_optician/wishlists',
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const { id_optician } = req.params;
     Wishlist.getWishlistsByOptician(Number(id_optician))
       .then((wishlists) => {
@@ -81,10 +83,7 @@ opticiansRouter.get(
             );
         }
       })
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'Wishlists cannot be found');
-      });
+      .catch((err) => next(err));
   }
 );
 

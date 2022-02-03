@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response, Router } from 'express';
 const modelsRouter = Router();
-import * as Model from '../models/model';
 import IModel from '../interfaces/IModel';
-
+import * as Auth from '../helpers/auth';
+import * as Model from '../models/model';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
@@ -38,72 +38,70 @@ modelsRouter.get('/:id_model', (req: Request, res: Response) => {
     });
 });
 
-///////////// GET BY COLLECTION ///////////////
+/////////////////// POST ///////////////////
 
-modelsRouter.get(
-  '/collections/:id_collection',
-  (req: Request, res: Response) => {
-    Model.getByCollection(Number(req.params.id_collection))
-      .then((models) => {
-        if (models) {
-          res.status(200).json(models);
+modelsRouter.post(
+  '/',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Model.validateModel,
+  (req: Request, res: Response, next: NextFunction) => {
+    const model = req.body as IModel;
+    Model.addModel(model)
+      .then((newModel) => {
+        if (newModel) {
+          res.status(201).json({ id: newModel.id_model, ...newModel });
         } else {
-          res.status(401).send('No model found');
+          throw new ErrorHandler(500, 'Model cannot be created');
         }
       })
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'model cannot be found');
-      });
+      .catch((err) => next(err));
   }
 );
 
-/////////////////// POST ///////////////////
-
-modelsRouter.post('/', (req: Request, res: Response) => {
-  const model = req.body as IModel;
-  Model.addModel(model)
-    .then((newModel) => res.status(200).json(newModel))
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Model cannot be created');
-    });
-});
-
 /////////////////// UPDATE ///////////////////
 
-modelsRouter.put('/:id_model', (req: Request, res: Response) => {
-  const { id_model } = req.params;
-  Model.updateModel(Number(id_model), req.body as IModel)
-    .then((updatedModel) => {
-      if (updatedModel) {
-        res.status(200).send('model updated');
-      } else {
-        res.status(401).send('model cannot be updated');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'model cannot be modified');
-    });
-});
+modelsRouter.put(
+  '/:id_model',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Model.validateModel,
+  Model.modelExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_model } = req.params;
+    Model.updateModel(Number(id_model), req.body as IModel)
+      .then((updatedModel) => {
+        if (updatedModel) {
+          Model.getById(Number(id_model)).then(
+            (model) => res.status(200).send(model) // react-admin needs this response
+          );
+        } else {
+          throw new ErrorHandler(500, 'Model cannot be updated');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 /////////////////// DELETE ///////////////////
 
-modelsRouter.delete('/:id_model', (req: Request, res: Response) => {
-  const { id_model } = req.params;
-  Model.deleteModel(Number(id_model))
-    .then((deleteModel) => {
-      if (deleteModel) {
-        res.status(200).send('model' + id_model + 'deleted');
-      } else {
-        res.status(401).send('No model found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'model cannot be updated');
-    });
-});
+modelsRouter.delete(
+  '/:id_model',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Model.modelExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_model } = req.params;
+    Model.deleteModel(Number(id_model))
+      .then((deleteModel) => {
+        if (deleteModel) {
+          res.status(200).send(req.record); // react-admin needs this response after a delete
+        } else {
+          throw new ErrorHandler(409, `Model not found`);
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 export default modelsRouter;

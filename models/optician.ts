@@ -103,7 +103,7 @@ const opticianExists = async (
   }
 };
 
-//////////// CRUD models /////////////
+//////////// CRUD models of optician /////////////
 const getAllOpticians = (sortBy = ''): Promise<IOptician[]> => {
   let sql = 'SELECT *, id_optician as id FROM opticians';
   if (sortBy) {
