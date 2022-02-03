@@ -8,6 +8,7 @@ import IOptician from '../interfaces/IOptician';
 const NodeGeocoder: Function = require('node-geocoder');
 import apiKey from '../api';
 
+//////////// Password Hashing /////////////
 const hashingOptions: Options & { raw?: false } = {
   type: argon2.argon2id,
   memoryCost: 2 ** 16,
@@ -23,18 +24,17 @@ const verifyPassword = (password: string, hashedPassword: string) => {
   return argon2.verify(hashedPassword, password, hashingOptions);
 };
 
+//////////// function will translate address & zipcode into lat-lng /////////////
 const getGeocode = (address: string, zipcode: number) => {
   const options = {
     provider: 'google',
 
     // Optional depending on the providers
-    //fetch: axios,
-    apiKey: apiKey, // for Mapquest, OpenCage, Google Premier
+    apiKey: apiKey,
     formatter: null, // 'gpx', 'string', ...
   };
   const geocoder = NodeGeocoder(options);
 
-  // Using callback
   return geocoder.geocode({
     address: address,
     country: 'France',
@@ -42,6 +42,7 @@ const getGeocode = (address: string, zipcode: number) => {
   });
 };
 
+//////////// Optician middlewares /////////////
 const validateOptician = (req: Request, res: Response, next: NextFunction) => {
   let required: Joi.PresenceMode = 'optional';
   if (req.method === 'POST') {
@@ -77,18 +78,6 @@ const validateOptician = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const validateLogin = (req: Request, res: Response, next: NextFunction) => {
-  const errors = Joi.object({
-    email: Joi.string().email().max(255).required(),
-    password: Joi.string().min(8).max(100).required(),
-  }).validate(req.body, { abortEarly: false }).error;
-  if (errors) {
-    next(new ErrorHandler(422, errors.message));
-  } else {
-    next();
-  }
-};
-
 const emailIsFree = async (req: Request, res: Response, next: NextFunction) => {
   const optician = req.body as IOptician;
   const opticianExists: IOptician = await getByEmail(optician.email);
@@ -109,10 +98,12 @@ const opticianExists = async (
   if (!opticianExists) {
     next(new ErrorHandler(404, `This optician doesn't exist`));
   } else {
+    req.record = opticianExists; // because we need deleted record to be sent after a delete in react-admin
     next();
   }
 };
 
+//////////// CRUD models /////////////
 const getAllOpticians = (sortBy = ''): Promise<IOptician[]> => {
   let sql = 'SELECT *, id_optician as id FROM opticians';
   if (sortBy) {
@@ -348,7 +339,6 @@ const deleteOptician = (id_optician: number): Promise<boolean> => {
 export {
   verifyPassword,
   validateOptician,
-  validateLogin,
   getAllOpticians,
   addOptician,
   getByEmail,
