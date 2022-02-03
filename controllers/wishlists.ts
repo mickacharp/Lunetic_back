@@ -1,22 +1,25 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const wishlistsRouter = Router();
 import IWishlist from '../interfaces/IWishlist';
 
 import * as Wishlist from '../models/wishlist';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
 /////////////////// GET ///////////////////
 
 // Get all wishlists
-wishlistsRouter.get('/', (req: Request, res: Response) => {
-  Wishlist.getAllWishlists()
+wishlistsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  Wishlist.getAllWishlists(formatSortString(sortBy))
     .then((wishlists: Array<IWishlist>) => {
+      res.setHeader(
+        'Content-Range',
+        `wishlists : 0-${wishlists.length}/${wishlists.length + 1}`
+      );
       res.status(200).json(wishlists);
     })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Wishlists cannot be found');
-    });
+    .catch((err) => next(err));
 });
 
 // Get a specific wishlist by id
@@ -35,30 +38,6 @@ wishlistsRouter.get('/:id_wishlist', (req: Request, res: Response) => {
       throw new ErrorHandler(500, 'Wishlist cannot be found');
     });
 });
-
-// Get all wishlists of one specific optician
-wishlistsRouter.get(
-  '/opticians/:id_optician',
-  (req: Request, res: Response) => {
-    const { id_optician } = req.params;
-    Wishlist.getWishlistsByOptician(Number(id_optician))
-      .then((wishlists) => {
-        if (wishlists) {
-          res.status(200).json(wishlists);
-        } else {
-          res
-            .status(401)
-            .send(
-              `Wishlists belonging to optician ${id_optician} can't be found`
-            );
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'Wishlists cannot be found');
-      });
-  }
-);
 
 /////////////////// POST ///////////////////
 

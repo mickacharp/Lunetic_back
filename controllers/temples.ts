@@ -1,22 +1,25 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 const templesRouter = Router();
 import ITemple from '../interfaces/ITemple';
 
 import * as Temple from '../models/temple';
 import { ErrorHandler } from '../helpers/errors';
+import { formatSortString } from '../helpers/functions';
 
 /////////////////// GET ///////////////////
 
 // Get all temples
-templesRouter.get('/', (req: Request, res: Response) => {
-  Temple.getAllTemples()
+templesRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
+  const sortBy: string = req.query.sort as string;
+  Temple.getAllTemples(formatSortString(sortBy))
     .then((temples: Array<ITemple>) => {
+      res.setHeader(
+        'Content-Range',
+        `temples : 0-${temples.length}/${temples.length + 1}`
+      );
       res.status(200).json(temples);
     })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Temples cannot be found');
-    });
+    .catch((err) => next(err));
 });
 
 // Get a specific temple by id

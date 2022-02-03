@@ -1,3 +1,6 @@
 node_modules/
 *.js
 .env
+package-lock.json
+reset-db-final.sql
+api.ts
