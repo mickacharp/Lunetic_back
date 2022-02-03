@@ -21,7 +21,8 @@ authRouter.post('/', (req: Request, res: Response, next: NextFunction) => {
           if (passwordIsCorrect) {
             const token: string = calculateToken(
               email,
-              Number(optician.id_optician)
+              Number(optician.id_optician),
+              optician.admin
             );
             res.cookie('optician_token', token, {
               expires: new Date(new Date().getTime() + 3600 * 1000),
@@ -30,6 +31,7 @@ authRouter.post('/', (req: Request, res: Response, next: NextFunction) => {
             res.json({
               id_optician: optician.id_optician,
               admin: optician.admin as number,
+              token: token,
             });
           } else throw new ErrorHandler(401, 'Invalid Credentials');
         }

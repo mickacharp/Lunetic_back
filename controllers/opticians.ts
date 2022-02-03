@@ -23,100 +23,105 @@ opticiansRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
     .catch((err) => next(err));
 });
 
-opticiansRouter.get('/:id_optician', (req: Request, res: Response) => {
-  const { id_optician } = req.params;
-  Optician.getById(Number(id_optician))
-    .then((optician) => {
-      if (optician) {
-        res.status(200).json(optician);
-      } else {
-        res.status(401).send('No optician found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Optician cannot be found');
-    });
-});
+opticiansRouter.get(
+  '/:id_optician',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_optician } = req.params;
+    Optician.getById(Number(id_optician))
+      .then((optician) => {
+        if (optician) {
+          res.status(200).json(optician);
+        } else {
+          res.status(401).send('No optician found');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 opticiansRouter.get(
   '/:id_optician/openingHours',
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const { id_optician } = req.params;
     OpeningHour.getByOptician(Number(id_optician))
       .then((openingHours) => {
         res.status(200).json(openingHours);
       })
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'Opening hours cannot be found');
-      });
+      .catch((err) => next(err));
   }
 );
 
-opticiansRouter.get('/:id_optician/orders', (req: Request, res: Response) => {
-  const { id_optician } = req.params;
-  Order.getOrdersByOptician(Number(id_optician))
-    .then((orders) => {
-      res.status(200).json(orders);
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Orders cannot be found');
-    });
-});
+opticiansRouter.get(
+  '/:id_optician/orders',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_optician } = req.params;
+    Order.getOrdersByOptician(Number(id_optician))
+      .then((orders) => {
+        res.status(200).json(orders);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 opticiansRouter.post(
   '/',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
   Optician.validateOptician,
   Optician.emailIsFree,
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const optician = req.body as IOptician;
     Optician.addOptician(optician)
-      .then((newOptician) => res.status(200).json(newOptician))
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'Optician cannot be created');
-      });
+      .then((newOptician) => {
+        if (newOptician) {
+          res.status(201).json({ id: newOptician.id_optician, ...newOptician });
+        } else {
+          throw new ErrorHandler(500, 'Optician cannot be created');
+        }
+      })
+      .catch((err) => next(err));
   }
 );
 
 opticiansRouter.put(
   '/:id_optician',
   Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
   Optician.validateOptician,
   Optician.opticianExists,
-  (req: Request, res: Response) => {
-    req.opticianInfo &&
-      Optician.updateOptician(req.opticianInfo.id, req.body as IOptician)
-        .then((updatedOptician) => {
-          if (updatedOptician) {
-            res.status(200).send('optician updated');
-          } else {
-            throw new ErrorHandler(500, 'Optician cannot be updated');
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          throw new ErrorHandler(500, 'Opticians cannot be modified');
-        });
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_optician } = req.params;
+    Optician.updateOptician(Number(id_optician), req.body as IOptician)
+      .then((updatedOptician) => {
+        if (updatedOptician) {
+          Optician.getById(Number(id_optician)).then(
+            (optician) => res.status(200).send(optician) // react-admin needs this response
+          );
+        } else {
+          throw new ErrorHandler(500, 'Optician cannot be updated');
+        }
+      })
+      .catch((err) => next(err));
   }
 );
 
-opticiansRouter.delete('/:id_optician', (req: Request, res: Response) => {
-  const { id_optician } = req.params;
-  Optician.deleteOptician(Number(id_optician))
-    .then((deletedOptician) => {
-      if (deletedOptician) {
-        res.status(200).send('delete optician for id_optician ' + id_optician);
-      } else {
-        res.status(401).send('No optician found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Optician cannot be updated');
-    });
-});
+opticiansRouter.delete(
+  '/:id_optician',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Optician.opticianExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_optician } = req.params;
+    Optician.deleteOptician(Number(id_optician))
+      .then((deletedOptician) => {
+        if (deletedOptician) {
+          res.status(200).send(req.record); // react-admin needs this response after a delete
+        } else {
+          throw new ErrorHandler(409, `Optician not found`);
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 export default opticiansRouter;

@@ -20,4 +20,5 @@ export default interface IOptician extends RowDataPacket {
   link_picture: string;
   lat: number;
   lng: number;
+  admin: number;
 }
