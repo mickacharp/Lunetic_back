@@ -1,9 +1,12 @@
 import { NextFunction, Request, Response, Router } from 'express';
 const colorsRouter = Router();
 import IColor from '../interfaces/IColor';
+import * as Auth from '../helpers/auth';
 import * as Color from '../models/color';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
+
+///////////// GET ALL ///////////////
 
 colorsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
@@ -18,56 +21,88 @@ colorsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
     .catch((err) => next(err));
 });
 
+///////////// GET ONE ///////////////
+
 colorsRouter.get(
   '/:id_color',
   (req: Request, res: Response, next: NextFunction) => {
     const { id_color } = req.params;
     Color.getColorById(Number(id_color))
-      .then((colors: IColor) => res.status(200).json(colors))
+      .then((color: IColor) => {
+        if (color) {
+          res.status(200).json(color);
+        } else {
+          res.status(401).send('No color found');
+        }
+      })
       .catch((err) => next(err));
   }
 );
 
-colorsRouter.delete('/:id_color', (req: Request, res: Response) => {
-  const { id_color } = req.params;
-  Color.deleteColor(Number(id_color))
-    .then((deletedColor) => {
-      if (deletedColor) {
-        res.status(200).send('delete color for id_color ' + id_color);
-      } else {
-        res.status(401).send('No color found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Color cannot be updated');
-    });
-});
+/////////////////// POST ///////////////////
 
-colorsRouter.post('/', Color.validateColor, (req: Request, res: Response) => {
-  const color = req.body as IColor;
-  Color.addColor(color)
-    .then((newColor) => res.status(200).json(newColor))
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Color cannot be created');
-    });
-});
+colorsRouter.post(
+  '/',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Color.validateColor,
+  (req: Request, res: Response, next: NextFunction) => {
+    const color = req.body as IColor;
+    Color.addColor(color)
+      .then((newColor) => {
+        if (newColor) {
+          res.status(201).json({ id: newColor.id_color, ...newColor });
+        } else {
+          throw new ErrorHandler(500, 'Color cannot be created');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
-colorsRouter.put('/:id_color', (req: Request, res: Response) => {
-  const { id_color } = req.params;
-  Color.updateColor(Number(id_color), req.body as IColor)
-    .then((updatedColor) => {
-      if (updatedColor) {
-        res.status(200).send('Color updated');
-      } else {
-        res.status(401).send('Color cannot be updated');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Color cannot be modified');
-    });
-});
+/////////////////// UPDATE ///////////////////
+
+colorsRouter.put(
+  '/:id_color',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Color.validateColor,
+  Color.colorExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_color } = req.params;
+    Color.updateColor(Number(id_color), req.body as IColor)
+      .then((updatedColor) => {
+        if (updatedColor) {
+          Color.getColorById(Number(id_color)).then(
+            (color) => res.status(200).send(color) // react-admin needs this response
+          );
+        } else {
+          throw new ErrorHandler(500, 'Color cannot be updated');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
+
+/////////////////// DELETE ///////////////////
+
+colorsRouter.delete(
+  '/:id_color',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Color.colorExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_color } = req.params;
+    Color.deleteColor(Number(id_color))
+      .then((deletedColor) => {
+        if (deletedColor) {
+          res.status(200).send(req.record); // react-admin needs this response after a delete
+        } else {
+          throw new ErrorHandler(409, `Color not found`);
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 export default colorsRouter;
