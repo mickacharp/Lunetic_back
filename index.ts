@@ -5,7 +5,7 @@ import { handleError } from './helpers/errors';
 import setupRoutes from './controllers';
 import cors from 'cors';
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3000;
 
 const corsOptions: cors.CorsOptions = {
@@ -25,7 +25,6 @@ app.use(cookieParser());
 
 setupRoutes(app);
 
-// A mettre à la fin pour gèrer les erreurs qui sortiront des routes
 app.use(handleError);
 
 app.listen(port, () => {

@@ -1,9 +1,12 @@
 import { NextFunction, Request, Response, Router } from 'express';
 const newsRouter = Router();
 import INews from '../interfaces/INews';
+import * as Auth from '../helpers/auth';
 import * as New from '../models/new';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
+
+///////////// GET ALL ///////////////
 
 newsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
@@ -15,76 +18,89 @@ newsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
       );
       res.status(200).json(news);
     })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'News cannot be found');
-    });
+    .catch((err) => next(err));
 });
 
-newsRouter.get('/:id_news', (req: Request, res: Response) => {
-  New.getById(Number(req.params.id_news))
-    .then((news) => {
-      if (news) {
-        res.status(200).json(news);
-      } else {
-        res.status(401).send('No news found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'news cannot be found');
-    });
-});
+///////////// GET ONE ///////////////
 
-newsRouter.post('/', New.validateNews, (req: Request, res: Response) => {
-  const news = req.body as INews;
-  New.addNews(news)
-    .then((newNews) => res.status(200).json(newNews))
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'The new cannot be created');
-    });
-});
+newsRouter.get(
+  '/:id_news',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_news } = req.params;
+    New.getById(Number(id_news))
+      .then((news) => {
+        if (news) {
+          res.status(200).json(news);
+        } else {
+          res.status(401).send('No news found');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
+
+/////////////////// POST ///////////////////
+
+newsRouter.post(
+  '/',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  New.validateNews,
+  (req: Request, res: Response, next: NextFunction) => {
+    const news = req.body as INews;
+    New.addNews(news)
+      .then((newNews) => {
+        if (newNews) {
+          res.status(201).json({ id: newNews.id_news, ...newNews });
+        } else {
+          throw new ErrorHandler(500, 'News cannot be created');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
+
+/////////////////// UPDATE ///////////////////
 
 newsRouter.put(
   '/:id_news',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
   New.validateNews,
   New.newsExists,
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const { id_news } = req.params;
-    console.log(id_news);
     New.updateNews(Number(id_news), req.body as INews)
       .then((updatedNews) => {
         if (updatedNews) {
-          res.status(200).send('News updated');
+          New.getById(Number(id_news)).then(
+            (news) => res.status(200).send(news) // react-admin needs this response
+          );
         } else {
           throw new ErrorHandler(500, 'News cannot be updated');
         }
       })
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'News cannot be modified');
-      });
+      .catch((err) => next(err));
   }
 );
 
-newsRouter.delete('/:id_news', (req: Request, res: Response) => {
-  const { id_news } = req.params;
-  New.deleteNews(Number(id_news))
-    .then((deletedNews) => {
-      if (deletedNews) {
-        res.status(200).send('News deleted');
-      } else {
-        res.status(401).send('No news found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(
-        500,
-        'News cannot be deleted, something wrong happened'
-      );
-    });
-});
+newsRouter.delete(
+  '/:id_news',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  New.newsExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_news } = req.params;
+    New.deleteNews(Number(id_news))
+      .then((deletedNews) => {
+        if (deletedNews) {
+          res.status(200).send(req.record); // react-admin needs this response after a delete
+        } else {
+          throw new ErrorHandler(409, `News not found`);
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 export default newsRouter;

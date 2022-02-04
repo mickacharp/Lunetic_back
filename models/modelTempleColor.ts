@@ -21,6 +21,16 @@ const getById = (id_model_temple_color: number): Promise<IModelTempleColor> => {
     .then(([results]) => results[0]);
 };
 
+const getByIdWishlist = (id_wishlist: number): Promise<IModelTempleColor[]> => {
+  return connection
+    .promise()
+    .query<IModelTempleColor[]>(
+      'SELECT mtc.*, m.name AS name_model, m.main_img, c.name AS name_color FROM models_temples_colors mtc INNER JOIN models m ON mtc.id_model = m.id_model INNER JOIN colors c ON mtc.id_color_model = c.id_color WHERE id_wishlist = ? ORDER BY id_model_temple_color',
+      [id_wishlist]
+    )
+    .then(([results]) => results);
+}
+
 const addModelTempleColor = (modelTempleColor: IModelTempleColor) => {
   return connection
     .promise()
@@ -52,6 +62,7 @@ const deleteModel = (id_model_temple_color: number): Promise<boolean> => {
 export {
   getAllModels,
   getById,
+  getByIdWishlist,
   deleteModel,
   addModelTempleColor,
 };
