@@ -1,10 +1,13 @@
 import { NextFunction, Request, Response, Router } from 'express';
 const collectionsRouter = Router();
 import ICollection from '../interfaces/ICollection';
+import * as Auth from '../helpers/auth';
 import * as Collection from '../models/collection';
 import * as Model from '../models/model';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
+
+///////////// GET ALL ///////////////
 
 collectionsRouter.get(
   '/',
@@ -22,6 +25,8 @@ collectionsRouter.get(
   }
 );
 
+///////////// GET ONE ///////////////
+
 collectionsRouter.get(
   '/:id_collection',
   (req: Request, res: Response, next: NextFunction) => {
@@ -36,8 +41,9 @@ collectionsRouter.get(
 
 collectionsRouter.get(
   '/:id_collection/models',
-  (req: Request, res: Response) => {
-    Model.getByCollection(Number(req.params.id_collection))
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_collection } = req.params;
+    Model.getByCollection(Number(id_collection))
       .then((models) => {
         if (models) {
           res.status(200).json(models);
@@ -45,59 +51,74 @@ collectionsRouter.get(
           res.status(401).send('No model found');
         }
       })
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'model cannot be found');
-      });
+      .catch((err) => next(err));
   }
 );
 
-collectionsRouter.delete('/:id_collection', (req: Request, res: Response) => {
-  const { id_collection } = req.params;
-  Collection.deleteCollection(Number(id_collection))
-    .then((deletedCollection) => {
-      if (deletedCollection) {
-        res
-          .status(200)
-          .send('delete collection for id_collection ' + id_collection);
-      } else {
-        res.status(401).send('No collection found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Collection cannot be updated');
-    });
-});
+/////////////////// POST ///////////////////
 
 collectionsRouter.post(
   '/',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
   Collection.validateCollection,
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const collection = req.body as ICollection;
     Collection.addCollection(collection)
-      .then((newCollection) => res.status(200).json(newCollection))
-      .catch((err) => {
-        console.log(err);
-        throw new ErrorHandler(500, 'Collection cannot be created');
-      });
+      .then((newCollection) => {
+        if (newCollection) {
+          res
+            .status(201)
+            .json({ id: newCollection.id_collection, ...newCollection });
+        } else {
+          throw new ErrorHandler(500, 'Collection cannot be created');
+        }
+      })
+      .catch((err) => next(err));
   }
 );
 
-collectionsRouter.put('/:id_collection', (req: Request, res: Response) => {
-  const { id_collection } = req.params;
-  Collection.updateCollection(Number(id_collection), req.body as ICollection)
-    .then((updatedCollection) => {
-      if (updatedCollection) {
-        res.status(200).send('Collection updated');
-      } else {
-        res.status(401).send('Collection cannot be updated');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Collection cannot be modified');
-    });
-});
+/////////////////// UPDATE ///////////////////
+
+collectionsRouter.put(
+  '/:id_collection',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Collection.validateCollection,
+  Collection.collectionExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_collection } = req.params;
+    Collection.updateCollection(Number(id_collection), req.body as ICollection)
+      .then((updatedCollection) => {
+        if (updatedCollection) {
+          Collection.getCollectionById(Number(id_collection)).then(
+            (collection) => res.status(200).send(collection) // react-admin needs this response
+          );
+        } else {
+          throw new ErrorHandler(500, 'Collection cannot be updated');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
+
+collectionsRouter.delete(
+  '/:id_collection',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Collection.collectionExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_collection } = req.params;
+    Collection.deleteCollection(Number(id_collection))
+      .then((deletedCollection) => {
+        if (deletedCollection) {
+          res.status(200).send(req.record); // react-admin needs this response after a delete
+        } else {
+          throw new ErrorHandler(409, `Collection not found`);
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 export default collectionsRouter;
