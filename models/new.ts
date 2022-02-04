@@ -5,12 +5,19 @@ import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import INews from '../interfaces/INews';
 
+//////////// Model middlewares /////////////
 const validateNews = (req: Request, res: Response, next: NextFunction) => {
+  let required: Joi.PresenceMode = 'optional';
+  if (req.method === 'POST') {
+    required = 'required';
+  }
   const errors = Joi.object({
-    title: Joi.string().max(255).allow('', null),
+    title: Joi.string().max(255).presence(required),
     subtitle: Joi.string().max(255).allow('', null),
-    text: Joi.string().allow('', null),
+    text: Joi.string().max(1500).presence(required),
     link_picture: Joi.string().max(255).allow('', null),
+    id_news: Joi.number().optional(),
+    id: Joi.number().optional(),
   }).validate(req.body, { abortEarly: false }).error;
   if (errors) {
     next(new ErrorHandler(422, errors.message));
@@ -19,6 +26,18 @@ const validateNews = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const newsExists = async (req: Request, res: Response, next: NextFunction) => {
+  const { id_news } = req.params;
+  const newsExists: INews = await getById(Number(id_news));
+  if (!newsExists) {
+    next(new ErrorHandler(404, `This news doesn't exist`));
+  } else {
+    req.record = newsExists; // because we need deleted record to be sent after a delete in react-admin
+    next();
+  }
+};
+
+//////////// CRUD models of news /////////////
 const getAllNews = (sortBy = ''): Promise<INews[]> => {
   let sql = 'SELECT *, id_news as id FROM news';
   if (sortBy) {
@@ -28,6 +47,15 @@ const getAllNews = (sortBy = ''): Promise<INews[]> => {
     .promise()
     .query<INews[]>(sql)
     .then(([results]) => results);
+};
+
+const getById = (id_news: number): Promise<INews> => {
+  return connection
+    .promise()
+    .query<INews[]>('SELECT *, id_news as id FROM news WHERE id_news = ?', [
+      id_news,
+    ])
+    .then(([results]) => results[0]);
 };
 
 const addNews = (news: INews) => {
@@ -48,23 +76,6 @@ const addNews = (news: INews) => {
         link_picture,
       };
     });
-};
-
-const getById = (id_news: number): Promise<INews> => {
-  return connection
-    .promise()
-    .query<INews[]>('SELECT * FROM news WHERE id_news = ?', [id_news])
-    .then(([results]) => results[0]);
-};
-
-const newsExists = async (req: Request, res: Response, next: NextFunction) => {
-  const { id_news } = req.params;
-  const newsExists: INews = await getById(Number(id_news));
-  if (!newsExists) {
-    next(new ErrorHandler(404, `This news doesn't exist`));
-  } else {
-    next();
-  }
 };
 
 const updateNews = async (id_news: number, news: INews): Promise<boolean> => {
@@ -111,10 +122,10 @@ const deleteNews = (id_news: number): Promise<boolean> => {
 
 export {
   validateNews,
+  newsExists,
   getAllNews,
   getById,
   addNews,
-  newsExists,
   updateNews,
   deleteNews,
 };
