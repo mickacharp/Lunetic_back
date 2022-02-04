@@ -26,7 +26,8 @@ modelsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
 modelsRouter.get(
   '/:id_model',
   (req: Request, res: Response, next: NextFunction) => {
-    Model.getById(Number(req.params.id_model))
+    const { id_model } = req.params;
+    Model.getById(Number(id_model))
       .then((model) => {
         if (model) {
           res.status(200).json(model);
