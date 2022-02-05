@@ -1,8 +1,42 @@
 import connection from '../db-config';
+import Joi from 'joi';
 import { ResultSetHeader } from 'mysql2';
-
+import { NextFunction, Request, Response } from 'express';
+import { ErrorHandler } from '../helpers/errors';
 import ITemple from '../interfaces/ITemple';
 
+//////////// Temple middlewares /////////////
+const validateTemple = (req: Request, res: Response, next: NextFunction) => {
+  let required: Joi.PresenceMode = 'optional';
+  if (req.method === 'POST') {
+    required = 'required';
+  }
+  const errors = Joi.object({
+    name: Joi.string().max(100).presence(required),
+    id_collection: Joi.number().presence(required),
+    id_temple: Joi.number().optional(),
+    id: Joi.number().optional(),
+  }).validate(req.body, { abortEarly: false }).error;
+  if (errors) {
+    next(new ErrorHandler(422, errors.message));
+  } else {
+    next();
+  }
+};
+
+const templeExists = (req: Request, res: Response, next: NextFunction) => {
+  const { id_temple } = req.params;
+  getTempleById(Number(id_temple)).then((templeExists: ITemple) => {
+    if (!templeExists) {
+      next(new ErrorHandler(404, `This temple doesn't exist`));
+    } else {
+      req.record = templeExists; // because we need deleted record to be sent after a delete in react-admin
+      next();
+    }
+  });
+};
+
+//////////// CRUD models of temple /////////////
 const getAllTemples = (sortBy = ''): Promise<ITemple[]> => {
   let sql = 'SELECT *, id_temple as id FROM temples';
   if (sortBy) {
@@ -17,16 +51,20 @@ const getAllTemples = (sortBy = ''): Promise<ITemple[]> => {
 const getTempleById = (id_temple: number): Promise<ITemple> => {
   return connection
     .promise()
-    .query<ITemple[]>('SELECT * FROM temples WHERE id_temple = ?', [id_temple])
+    .query<ITemple[]>(
+      'SELECT *, id_temple as id FROM temples WHERE id_temple = ?',
+      [id_temple]
+    )
     .then(([results]) => results[0]);
 };
 
 const getTempleByCollection = (id_collection: number) => {
   return connection
     .promise()
-    .query<ITemple[]>('SELECT * FROM temples WHERE id_collection = ?', [
-      id_collection,
-    ])
+    .query<ITemple[]>(
+      'SELECT *, id_temple as id FROM temples WHERE id_collection = ?',
+      [id_collection]
+    )
     .then(([results]) => results);
 };
 
@@ -50,7 +88,7 @@ const addTemple = (temple: ITemple) => {
 
 const updateTemple = (id_temple: number, temple: ITemple): Promise<boolean> => {
   let sql = 'UPDATE temples SET ';
-  const sqlValues: Array<string | number> = [];
+  const sqlValues: (string | number)[] = [];
   let oneValue = false;
 
   if (temple.name) {
@@ -84,6 +122,8 @@ const deleteTemple = (id_temple: number): Promise<boolean> => {
 };
 
 export {
+  validateTemple,
+  templeExists,
   getAllTemples,
   getTempleById,
   getTempleByCollection,

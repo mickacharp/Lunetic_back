@@ -4,6 +4,7 @@ import ICollection from '../interfaces/ICollection';
 import * as Auth from '../helpers/auth';
 import * as Collection from '../models/collection';
 import * as Model from '../models/model';
+import * as Temple from '../models/temple';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
@@ -49,6 +50,24 @@ collectionsRouter.get(
           res.status(200).json(models);
         } else {
           res.status(401).send('No model found');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
+
+///////////// GET TEMPLES BY COLLECTION ///////////////
+
+collectionsRouter.get(
+  '/:id_collection/temples',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_collection } = req.params;
+    Temple.getTempleByCollection(Number(id_collection))
+      .then((temples) => {
+        if (temples) {
+          res.status(200).json(temples);
+        } else {
+          res.status(401).send('No temple found');
         }
       })
       .catch((err) => next(err));
