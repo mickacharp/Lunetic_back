@@ -7,7 +7,7 @@ export default interface IOptician extends RowDataPacket {
   company: string;
   address: string;
   other_address: string;
-  postal_code: string;
+  postal_code: number;
   city: string;
   email: string;
   mobile_phone: string;
@@ -18,4 +18,7 @@ export default interface IOptician extends RowDataPacket {
   siret: string;
   vat_number: string;
   link_picture: string;
+  lat: number;
+  lng: number;
+  admin: number;
 }
