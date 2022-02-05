@@ -11,7 +11,7 @@ import { formatSortString } from '../helpers/functions';
 ordersRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
   Order.getAllOrders(formatSortString(sortBy))
-    .then((orders: Array<IOrders>) => {
+    .then((orders: IOrders[]) => {
       res.setHeader(
         'Content-Range',
         `orders : 0-${orders.length}/${orders.length + 1}`
