@@ -3,6 +3,7 @@ const wishlistsRouter = Router();
 import IWishlist from '../interfaces/IWishlist';
 import * as Auth from '../helpers/auth';
 import * as Wishlist from '../models/wishlist';
+import * as ModelTempleColor from '../models/modelTempleColor';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
@@ -36,6 +37,20 @@ wishlistsRouter.get(
         }
       })
 
+      .catch((err) => next(err));
+  }
+);
+
+///////////// GET GLASSES (ModelTempleColor) OF ONE WISHLIST ///////////////
+
+wishlistsRouter.get(
+  '/:id_wishlist/glasses',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_wishlist } = req.params;
+    ModelTempleColor.getByIdWishlist(Number(id_wishlist))
+      .then((glasses) => {
+        res.status(200).json(glasses);
+      })
       .catch((err) => next(err));
   }
 );
