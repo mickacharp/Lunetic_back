@@ -14,7 +14,7 @@ import { formatSortString } from '../helpers/functions';
 opticiansRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
   Optician.getAllOpticians(formatSortString(sortBy))
-    .then((opticians: Array<IOptician>) => {
+    .then((opticians: IOptician[]) => {
       res.setHeader(
         'Content-Range',
         `opticians : 0-${opticians.length}/${opticians.length + 1}`

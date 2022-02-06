@@ -11,7 +11,7 @@ import { formatSortString } from '../helpers/functions';
 newsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
   New.getAllNews(formatSortString(sortBy))
-    .then((news: Array<INews>) => {
+    .then((news: INews[]) => {
       res.setHeader(
         'Content-Range',
         `news : 0-${news.length}/${news.length + 1}`

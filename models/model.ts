@@ -30,15 +30,16 @@ const validateModel = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const modelExists = async (req: Request, res: Response, next: NextFunction) => {
+const modelExists = (req: Request, res: Response, next: NextFunction) => {
   const { id_model } = req.params;
-  const modelExists: IModel = await getById(Number(id_model));
-  if (!modelExists) {
-    next(new ErrorHandler(404, `This model doesn't exist`));
-  } else {
-    req.record = modelExists; // because we need deleted record to be sent after a delete in react-admin
-    next();
-  }
+  getById(Number(id_model)).then((modelExists: IModel) => {
+    if (!modelExists) {
+      next(new ErrorHandler(404, `This model doesn't exist`));
+    } else {
+      req.record = modelExists; // because we need deleted record to be sent after a delete in react-admin
+      next();
+    }
+  });
 };
 
 //////////// CRUD models of model /////////////
@@ -113,12 +114,9 @@ const addModel = (model: IModel) => {
     });
 };
 
-const updateModel = async (
-  id_model: number,
-  model: IModel
-): Promise<boolean> => {
+const updateModel = (id_model: number, model: IModel): Promise<boolean> => {
   let sql = 'UPDATE models SET';
-  const sqlValues: Array<string | number> = [];
+  const sqlValues: (string | number)[] = [];
   let oneValue = false;
 
   if (model.name) {

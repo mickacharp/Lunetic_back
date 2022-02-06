@@ -14,7 +14,7 @@ collectionsRouter.get(
   (req: Request, res: Response, next: NextFunction) => {
     const sortBy: string = req.query.sort as string;
     Collection.getAllCollections(formatSortString(sortBy))
-      .then((collections: Array<ICollection>) => {
+      .then((collections: ICollection[]) => {
         res.setHeader(
           'Content-Range',
           `collections : 0-${collections.length}/${collections.length + 1}`

@@ -78,29 +78,27 @@ const validateOptician = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const emailIsFree = async (req: Request, res: Response, next: NextFunction) => {
+const emailIsFree = (req: Request, res: Response, next: NextFunction) => {
   const optician = req.body as IOptician;
-  const opticianExists: IOptician = await getByEmail(optician.email);
-  if (opticianExists) {
-    next(new ErrorHandler(409, `This optician already exists`));
-  } else {
-    next();
-  }
+  getByEmail(optician.email).then((opticianExists: IOptician) => {
+    if (opticianExists) {
+      next(new ErrorHandler(409, `This optician already exists`));
+    } else {
+      next();
+    }
+  });
 };
 
-const opticianExists = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const opticianExists = (req: Request, res: Response, next: NextFunction) => {
   const { id_optician } = req.params;
-  const opticianExists: IOptician = await getById(Number(id_optician));
-  if (!opticianExists) {
-    next(new ErrorHandler(404, `This optician doesn't exist`));
-  } else {
-    req.record = opticianExists; // because we need deleted record to be sent after a delete in react-admin
-    next();
-  }
+  getById(Number(id_optician)).then((opticianExists: IOptician) => {
+    if (!opticianExists) {
+      next(new ErrorHandler(404, `This optician doesn't exist`));
+    } else {
+      req.record = opticianExists; // because we need deleted record to be sent after a delete in react-admin
+      next();
+    }
+  });
 };
 
 //////////// CRUD models of optician /////////////
@@ -210,27 +208,28 @@ const addOptician = async (optician: IOptician) => {
     });
 };
 
-const updateOptician = async (
+const updateOptician = (
   id_optician: number,
   optician: IOptician
 ): Promise<boolean> => {
   let sql = 'UPDATE opticians SET';
-  const sqlValues: Array<string | number> = [];
+  const sqlValues: (string | number)[] = [];
   let oneValue = false;
 
   if (optician.address || optician.postal_code) {
-    const result = await getGeocode(optician.address, optician.postal_code);
-    const lat: number = result[0].latitude;
-    const lng: number = result[0].longitude;
-    sql += ' lat = ? ';
-    sqlValues.push(lat);
-    sql += oneValue ? ', lng = ? ' : ', lng=?';
-    sqlValues.push(lng);
+    getGeocode(optician.address, optician.postal_code).then(
+      (result: GeolocationCoordinates[]) => {
+        const lat: number = result[0].latitude;
+        const lng: number = result[0].longitude;
+        sql += ' lat = ?, lng = ? ';
+        sqlValues.push(lat, lng);
+      }
+    );
     oneValue = true;
   }
 
   if (optician.firstname) {
-    sql += oneValue ? ', firstname = ? ' : ', firstname = ?';
+    sql += oneValue ? ', firstname = ? ' : ' firstname = ? ';
     sqlValues.push(optician.firstname);
     oneValue = true;
   }
@@ -277,8 +276,9 @@ const updateOptician = async (
   }
   if (optician.password) {
     sql += oneValue ? ', password = ? ' : ' password = ? ';
-    const hashedPassword: string = await hashPassword(optician.password);
-    sqlValues.push(hashedPassword);
+    hashPassword(optician.password).then((hashedPassword: string) => {
+      sqlValues.push(hashedPassword);
+    });
     oneValue = true;
   }
   if (optician.website) {
