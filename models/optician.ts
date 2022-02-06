@@ -208,7 +208,7 @@ const addOptician = async (optician: IOptician) => {
     });
 };
 
-const updateOptician = (
+const updateOptician = async (
   id_optician: number,
   optician: IOptician
 ): Promise<boolean> => {
@@ -217,19 +217,18 @@ const updateOptician = (
   let oneValue = false;
 
   if (optician.address || optician.postal_code) {
-    getGeocode(optician.address, optician.postal_code).then(
-      (result: GeolocationCoordinates[]) => {
-        const lat: number = result[0].latitude;
-        const lng: number = result[0].longitude;
-        sql += ' lat = ?, lng = ? ';
-        sqlValues.push(lat, lng);
-      }
-    );
+    const result = await getGeocode(optician.address, optician.postal_code);
+    const lat: number = result[0].latitude;
+    const lng: number = result[0].longitude;
+    sql += ' lat = ? ';
+    sqlValues.push(lat);
+    sql += oneValue ? ', lng = ? ' : ', lng=?';
+    sqlValues.push(lng);
     oneValue = true;
   }
 
   if (optician.firstname) {
-    sql += oneValue ? ', firstname = ? ' : ' firstname = ? ';
+    sql += oneValue ? ', firstname = ? ' : ', firstname = ?';
     sqlValues.push(optician.firstname);
     oneValue = true;
   }
@@ -276,9 +275,8 @@ const updateOptician = (
   }
   if (optician.password) {
     sql += oneValue ? ', password = ? ' : ' password = ? ';
-    hashPassword(optician.password).then((hashedPassword: string) => {
-      sqlValues.push(hashedPassword);
-    });
+    const hashedPassword: string = await hashPassword(optician.password);
+    sqlValues.push(hashedPassword);
     oneValue = true;
   }
   if (optician.website) {
