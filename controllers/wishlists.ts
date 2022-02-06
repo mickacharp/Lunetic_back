@@ -6,7 +6,7 @@ import * as Wishlist from '../models/wishlist';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
-///////////// GET ALL ///////////////
+////////////// GET ALL ////////////////
 
 wishlistsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
