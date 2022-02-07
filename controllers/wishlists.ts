@@ -60,7 +60,6 @@ wishlistsRouter.get(
 wishlistsRouter.post(
   '/',
   Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
   Wishlist.validateWishlist,
   (req: Request, res: Response, next: NextFunction) => {
     const wishlist = req.body as IWishlist;
@@ -81,7 +80,6 @@ wishlistsRouter.post(
 wishlistsRouter.put(
   '/:id_wishlist',
   Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
   Wishlist.validateWishlist,
   Wishlist.wishlistExists,
   (req: Request, res: Response, next: NextFunction) => {

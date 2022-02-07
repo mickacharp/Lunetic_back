@@ -47,7 +47,6 @@ modelsTemplesColorsRouter.get(
 modelsTemplesColorsRouter.post(
   '/',
   Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
   ModelTempleColor.validateModelTempleColor,
   (req: Request, res: Response, next: NextFunction) => {
     const glasses = req.body as IModelTempleColor;
@@ -70,7 +69,6 @@ modelsTemplesColorsRouter.post(
 modelsTemplesColorsRouter.put(
   '/:id_model_temple_color',
   Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
   ModelTempleColor.validateModelTempleColor,
   ModelTempleColor.modelTempleColorExists,
   (req: Request, res: Response, next: NextFunction) => {
@@ -97,7 +95,6 @@ modelsTemplesColorsRouter.put(
 modelsTemplesColorsRouter.delete(
   '/:id_model_temple_color',
   Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
   ModelTempleColor.modelTempleColorExists,
   (req: Request, res: Response, next: NextFunction) => {
     const { id_model_temple_color } = req.params;

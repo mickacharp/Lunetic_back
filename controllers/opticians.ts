@@ -110,7 +110,6 @@ opticiansRouter.post(
 opticiansRouter.put(
   '/:id_optician',
   Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
   Optician.validateOptician,
   Optician.opticianExists,
   (req: Request, res: Response, next: NextFunction) => {
