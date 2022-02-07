@@ -32,21 +32,16 @@ const validateOpeningHour = (
   }
 };
 
-const openingHourExists = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const openingHourExists = (req: Request, res: Response, next: NextFunction) => {
   const { id_opening_hour } = req.params;
-  const openingHourExists: IOpeningHour = await getById(
-    Number(id_opening_hour)
-  );
-  if (!openingHourExists) {
-    next(new ErrorHandler(404, `This opening hour doesn't exist`));
-  } else {
-    req.record = openingHourExists; // because we need deleted record to be sent after a delete in react-admin
-    next();
-  }
+  getById(Number(id_opening_hour)).then((openingHourExists: IOpeningHour) => {
+    if (!openingHourExists) {
+      next(new ErrorHandler(404, `This opening hour doesn't exist`));
+    } else {
+      req.record = openingHourExists; // because we need deleted record to be sent after a delete in react-admin
+      next();
+    }
+  });
 };
 
 //////////// CRUD models of opening hour /////////////
@@ -117,12 +112,12 @@ const addOpeningHours = (openingHours: IOpeningHour) => {
     });
 };
 
-const updateOpeningHour = async (
+const updateOpeningHour = (
   id_opening_hour: number,
   openingHour: IOpeningHour
 ): Promise<boolean> => {
   let sql = 'UPDATE opening_hours SET';
-  const sqlValues: Array<string | number> = [];
+  const sqlValues: (string | number)[] = [];
   let oneValue = false;
 
   if (openingHour.start_morning) {

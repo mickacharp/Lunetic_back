@@ -26,15 +26,16 @@ const validateNews = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const newsExists = async (req: Request, res: Response, next: NextFunction) => {
+const newsExists = (req: Request, res: Response, next: NextFunction) => {
   const { id_news } = req.params;
-  const newsExists: INews = await getById(Number(id_news));
-  if (!newsExists) {
-    next(new ErrorHandler(404, `This news doesn't exist`));
-  } else {
-    req.record = newsExists; // because we need deleted record to be sent after a delete in react-admin
-    next();
-  }
+  getById(Number(id_news)).then((newsExists: INews) => {
+    if (!newsExists) {
+      next(new ErrorHandler(404, `This news doesn't exist`));
+    } else {
+      req.record = newsExists; // because we need deleted record to be sent after a delete in react-admin
+      next();
+    }
+  });
 };
 
 //////////// CRUD models of news /////////////
@@ -78,9 +79,9 @@ const addNews = (news: INews) => {
     });
 };
 
-const updateNews = async (id_news: number, news: INews): Promise<boolean> => {
+const updateNews = (id_news: number, news: INews): Promise<boolean> => {
   let sql = 'UPDATE news SET';
-  const sqlValues: Array<string | number> = [];
+  const sqlValues: (string | number)[] = [];
   let oneValue = false;
 
   if (news.title) {

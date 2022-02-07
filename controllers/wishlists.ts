@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response, Router } from 'express';
 const wishlistsRouter = Router();
 import IWishlist from '../interfaces/IWishlist';
-
+import * as Auth from '../helpers/auth';
 import * as Wishlist from '../models/wishlist';
+import * as ModelTempleColor from '../models/modelTempleColor';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
-/////////////////// GET ///////////////////
+////////////// GET ALL ////////////////
 
-// Get all wishlists
 wishlistsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
   Wishlist.getAllWishlists(formatSortString(sortBy))
-    .then((wishlists: Array<IWishlist>) => {
+    .then((wishlists: IWishlist[]) => {
       res.setHeader(
         'Content-Range',
         `wishlists : 0-${wishlists.length}/${wishlists.length + 1}`
@@ -22,69 +22,100 @@ wishlistsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
     .catch((err) => next(err));
 });
 
-// Get a specific wishlist by id
-wishlistsRouter.get('/:id_wishlist', (req: Request, res: Response) => {
-  const { id_wishlist } = req.params;
-  Wishlist.getWishlistById(Number(id_wishlist))
-    .then((wishlist) => {
-      if (wishlist) {
-        res.status(200).json(wishlist);
-      } else {
-        res.status(401).send('No wishlist found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Wishlist cannot be found');
-    });
-});
+///////////// GET ONE ///////////////
+
+wishlistsRouter.get(
+  '/:id_wishlist',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_wishlist } = req.params;
+    Wishlist.getWishlistById(Number(id_wishlist))
+      .then((wishlist) => {
+        if (wishlist) {
+          res.status(200).json(wishlist);
+        } else {
+          res.status(401).send('No wishlist found');
+        }
+      })
+
+      .catch((err) => next(err));
+  }
+);
+
+///////////// GET GLASSES (ModelTempleColor) OF ONE WISHLIST ///////////////
+
+wishlistsRouter.get(
+  '/:id_wishlist/glasses',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_wishlist } = req.params;
+    ModelTempleColor.getByIdWishlist(Number(id_wishlist))
+      .then((glasses) => {
+        res.status(200).json(glasses);
+      })
+      .catch((err) => next(err));
+  }
+);
 
 /////////////////// POST ///////////////////
 
-wishlistsRouter.post('/', (req: Request, res: Response) => {
-  const wishlist = req.body as IWishlist;
-  Wishlist.addWishlist(wishlist)
-    .then((newWishlist) => res.status(200).json(newWishlist))
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Wishlist cannot be created');
-    });
-});
+wishlistsRouter.post(
+  '/',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Wishlist.validateWishlist,
+  (req: Request, res: Response, next: NextFunction) => {
+    const wishlist = req.body as IWishlist;
+    Wishlist.addWishlist(wishlist)
+      .then((newWishlist) => {
+        if (newWishlist) {
+          res.status(201).json({ id: newWishlist.id_wishlist, ...newWishlist });
+        } else {
+          throw new ErrorHandler(500, 'Wishlist cannot be created');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
-/////////////////// PUT ///////////////////
+/////////////////// UPDATE ///////////////////
 
-wishlistsRouter.put('/:id_wishlist', (req: Request, res: Response) => {
-  const { id_wishlist } = req.params;
-  Wishlist.updateWishlist(Number(id_wishlist), req.body as IWishlist)
-    .then((updatedWishlist) => {
-      if (updatedWishlist) {
-        res.status(200).send('Wishlist updated');
-      } else {
-        res.status(401).send('Wishlist cannot be updated');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Wishlist cannot be modified');
-    });
-});
+wishlistsRouter.put(
+  '/:id_wishlist',
+  Auth.getCurrentSession,
+  Auth.checkSessionPrivileges,
+  Wishlist.validateWishlist,
+  Wishlist.wishlistExists,
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_wishlist } = req.params;
+    Wishlist.updateWishlist(Number(id_wishlist), req.body as IWishlist)
+      .then((updatedWishlist) => {
+        if (updatedWishlist) {
+          Wishlist.getWishlistById(Number(id_wishlist)).then(
+            (wishlist) => res.status(200).send(wishlist) // react-admin needs this response
+          );
+        } else {
+          throw new ErrorHandler(500, 'Wishlist cannot be updated');
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 /////////////////// DELETE ///////////////////
 
-wishlistsRouter.delete('/:id_wishlist', (req: Request, res: Response) => {
-  const { id_wishlist } = req.params;
-  Wishlist.deleteWishlist(Number(id_wishlist))
-    .then((deletedWishlist) => {
-      if (deletedWishlist) {
-        res.status(200).send('Delete wishlist for id_wishlist ' + id_wishlist);
-      } else {
-        res.status(401).send('No wishlist found');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new ErrorHandler(500, 'Wishlist cannot be updated');
-    });
-});
+wishlistsRouter.delete(
+  '/:id_wishlist',
+  (req: Request, res: Response, next: NextFunction) => {
+    const { id_wishlist } = req.params;
+    Wishlist.deleteWishlist(Number(id_wishlist))
+      .then((deletedWishlist) => {
+        if (deletedWishlist) {
+          res.status(200).send(req.record); // react-admin needs this response after a delete
+        } else {
+          throw new ErrorHandler(409, `Wishlit not found`);
+        }
+      })
+      .catch((err) => next(err));
+  }
+);
 
 export default wishlistsRouter;

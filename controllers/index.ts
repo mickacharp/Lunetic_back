@@ -30,7 +30,7 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/contact-guest', contactGuestRouter);
   app.use('/api/contact-pro', contactProRouter);
   app.use('/api/contact-confirmation', contactConfirmationRouter);
-  app.use('/api/models-wishlist', modelsTemplesColorsRouter);
+  app.use('/api/glasses', modelsTemplesColorsRouter);
 };
 
 export default setupRoutes;

@@ -13,7 +13,7 @@ openingHoursRouter.get(
   (req: Request, res: Response, next: NextFunction) => {
     const sortBy: string = req.query.sort as string;
     OpeningHour.getAllOpeningHour(formatSortString(sortBy))
-      .then((openingHours: Array<IOpeningHour>) => {
+      .then((openingHours: IOpeningHour[]) => {
         res.setHeader(
           'Content-Range',
           `openingHours : 0-${openingHours.length}/${openingHours.length + 1}`
