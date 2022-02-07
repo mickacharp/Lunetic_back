@@ -16,8 +16,8 @@ const validateModelTempleColor = (
     required = 'required';
   }
   const errors = Joi.object({
-    id_temple: Joi.number().optional(),
-    id_color_temple: Joi.number().optional(),
+    id_temple: Joi.optional(),
+    id_color_temple: Joi.optional(),
     id_model: Joi.number().presence(required),
     id_color_model: Joi.number().presence(required),
     id_wishlist: Joi.number().presence(required),
