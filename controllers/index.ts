@@ -14,6 +14,10 @@ import contactGuestRouter from './contactGuest';
 import contactProRouter from './contactPro';
 import contactConfirmationRouter from './contactConfirmation';
 import modelsTemplesColorsRouter from './modelsTemplesColors';
+import carouselsRouter from './carousels';
+import conceptImagesRouter from './conceptImages';
+import usImagesRouter from './usImages';
+import modelsImagesRouter from './modelsImages';
 
 const setupRoutes = (app: express.Application) => {
   app.use('/api/opticians', opticiansRouter);
@@ -30,7 +34,11 @@ const setupRoutes = (app: express.Application) => {
   app.use('/api/contact-guest', contactGuestRouter);
   app.use('/api/contact-pro', contactProRouter);
   app.use('/api/contact-confirmation', contactConfirmationRouter);
-  app.use('/api/models-wishlist', modelsTemplesColorsRouter);
+  app.use('/api/glasses', modelsTemplesColorsRouter);
+  app.use('/api/carousels', carouselsRouter);
+  app.use('/api/concept-images', conceptImagesRouter);
+  app.use('/api/us-images', usImagesRouter);
+  app.use('/api/models-images', modelsImagesRouter);
 };
 
 export default setupRoutes;

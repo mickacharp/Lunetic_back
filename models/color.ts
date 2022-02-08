@@ -23,15 +23,16 @@ const validateColor = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const colorExists = async (req: Request, res: Response, next: NextFunction) => {
+const colorExists = (req: Request, res: Response, next: NextFunction) => {
   const { id_color } = req.params;
-  const colorExists: IColor = await getColorById(Number(id_color));
-  if (!colorExists) {
-    next(new ErrorHandler(404, `This color doesn't exist`));
-  } else {
-    req.record = colorExists; // because we need deleted record to be sent after a delete in react-admin
-    next();
-  }
+  getColorById(Number(id_color)).then((colorExists: IColor) => {
+    if (!colorExists) {
+      next(new ErrorHandler(404, `This color doesn't exist`));
+    } else {
+      req.record = colorExists; // because we need deleted record to be sent after a delete in react-admin
+      next();
+    }
+  });
 };
 
 //////////// CRUD models of color /////////////

@@ -11,7 +11,7 @@ import { formatSortString } from '../helpers/functions';
 colorsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
   const sortBy: string = req.query.sort as string;
   Color.getAllColors(formatSortString(sortBy))
-    .then((colors: Array<IColor>) => {
+    .then((colors: IColor[]) => {
       res.setHeader(
         'Content-Range',
         `colors : 0-${colors.length}/${colors.length + 1}`
