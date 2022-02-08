@@ -102,6 +102,8 @@ wishlistsRouter.put(
 
 wishlistsRouter.delete(
   '/:id_wishlist',
+  Auth.getCurrentSession,
+  Wishlist.wishlistExists,
   (req: Request, res: Response, next: NextFunction) => {
     const { id_wishlist } = req.params;
     Wishlist.deleteWishlist(Number(id_wishlist))
