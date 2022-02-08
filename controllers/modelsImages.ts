@@ -1,59 +1,41 @@
 import { NextFunction, Request, Response, Router } from 'express';
-const modelsRouter = Router();
-import IModel from '../interfaces/IModel';
+const modelsImagesRouter = Router();
+import IModelsImage from '../interfaces/IModelsImage';
 import * as Auth from '../helpers/auth';
-import * as Model from '../models/model';
+import * as ModelsImage from '../models/modelsImage';
 import { ErrorHandler } from '../helpers/errors';
 import { formatSortString } from '../helpers/functions';
 
 ///////////// GET ALL ///////////////
 
-modelsRouter.get('/', (req: Request, res: Response, next: NextFunction) => {
-  const sortBy: string = req.query.sort as string;
-  Model.getAllModels(formatSortString(sortBy))
-    .then((models: IModel[]) => {
-      res.setHeader(
-        'Content-Range',
-        `models : 0-${models.length}/${models.length + 1}`
-      );
-      res.status(200).json(models);
-    })
-    .catch((err) => next(err));
-});
-
-///////////// GET ONE ///////////////
-
-modelsRouter.get(
-  '/:id_model',
+modelsImagesRouter.get(
+  '/',
   (req: Request, res: Response, next: NextFunction) => {
-    const { id_model } = req.params;
-    Model.getById(Number(id_model))
-      .then((model) => {
-        if (model) {
-          res.status(200).json(model);
-        } else {
-          res.status(401).send('No model found');
-        }
+    const sortBy: string = req.query.sort as string;
+    ModelsImage.getAllModelsImages(formatSortString(sortBy))
+      .then((modelsImages: IModelsImage[]) => {
+        res.setHeader(
+          'Content-Range',
+          `modelsImages : 0-${modelsImages.length}/${modelsImages.length + 1}`
+        );
+        res.status(200).json(modelsImages);
       })
       .catch((err) => next(err));
   }
 );
 
-/////////////////// POST ///////////////////
+///////////// GET ONE ///////////////
 
-modelsRouter.post(
-  '/',
-  Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
-  Model.validateModel,
+modelsImagesRouter.get(
+  '/:id_models_image',
   (req: Request, res: Response, next: NextFunction) => {
-    const model = req.body as IModel;
-    Model.addModel(model)
-      .then((newModel) => {
-        if (newModel) {
-          res.status(201).json({ id: newModel.id_model, ...newModel });
+    const { id_models_image } = req.params;
+    ModelsImage.getById(Number(id_models_image))
+      .then((modelsImage) => {
+        if (modelsImage) {
+          res.status(200).json(modelsImage);
         } else {
-          throw new ErrorHandler(500, 'Model cannot be created');
+          res.status(401).send('No modelsImage found');
         }
       })
       .catch((err) => next(err));
@@ -62,47 +44,29 @@ modelsRouter.post(
 
 /////////////////// UPDATE ///////////////////
 
-modelsRouter.put(
-  '/:id_model',
+modelsImagesRouter.put(
+  '/:id_models_image',
   Auth.getCurrentSession,
   Auth.checkSessionPrivileges,
-  Model.validateModel,
-  Model.modelExists,
+  ModelsImage.validateModelsImage,
+  ModelsImage.modelsImageExists,
   (req: Request, res: Response, next: NextFunction) => {
-    const { id_model } = req.params;
-    Model.updateModel(Number(id_model), req.body as IModel)
-      .then((updatedModel) => {
-        if (updatedModel) {
-          Model.getById(Number(id_model)).then(
-            (model) => res.status(200).send(model) // react-admin needs this response
+    const { id_models_image } = req.params;
+    ModelsImage.updateModelsImage(
+      Number(id_models_image),
+      req.body as IModelsImage
+    )
+      .then((updatedModelsImage) => {
+        if (updatedModelsImage) {
+          ModelsImage.getById(Number(id_models_image)).then(
+            (modelsImage) => res.status(200).send(modelsImage) // react-admin needs this response
           );
         } else {
-          throw new ErrorHandler(500, 'Model cannot be updated');
+          throw new ErrorHandler(500, 'ModelsImage cannot be updated');
         }
       })
       .catch((err) => next(err));
   }
 );
 
-/////////////////// DELETE ///////////////////
-
-modelsRouter.delete(
-  '/:id_model',
-  Auth.getCurrentSession,
-  Auth.checkSessionPrivileges,
-  Model.modelExists,
-  (req: Request, res: Response, next: NextFunction) => {
-    const { id_model } = req.params;
-    Model.deleteModel(Number(id_model))
-      .then((deleteModel) => {
-        if (deleteModel) {
-          res.status(200).send(req.record); // react-admin needs this response after a delete
-        } else {
-          throw new ErrorHandler(409, `Model not found`);
-        }
-      })
-      .catch((err) => next(err));
-  }
-);
-
-export default modelsRouter;
+export default modelsImagesRouter;
