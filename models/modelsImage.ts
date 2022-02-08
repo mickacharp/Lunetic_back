@@ -51,7 +51,7 @@ const modelsImageExists = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-//////////// CRUD models of usImage /////////////
+//////////// CRUD models of modelsImage /////////////
 const getAllModelsImages = (sortBy = ''): Promise<IModelsImage[]> => {
   let sql = 'SELECT *, id_models_image as id FROM models_images';
   if (sortBy) {

@@ -1,7 +1,7 @@
 import { RowDataPacket } from 'mysql2';
 
 export default interface IModelsImage extends RowDataPacket {
-  id_us_image: number;
+  id_models_image: number;
   main_img1: string;
   main_img2: string;
   main_img3: string;
