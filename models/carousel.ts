@@ -40,7 +40,7 @@ const carouselExists = (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-//////////// CRUD carousels of carousel /////////////
+//////////// CRUD models of carousel /////////////
 const getAllCarousels = (sortBy = ''): Promise<ICarousel[]> => {
   let sql = 'SELECT *, id_carousel as id FROM carousels';
   if (sortBy) {
