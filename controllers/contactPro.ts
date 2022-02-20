@@ -19,7 +19,9 @@ contactProRouter.post('/', (req: Request, res: Response) => {
   } = req.body as IContact;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'something.yourdomain.com',
+    port: 123456789,
+    secure: true, // true for 123456789, false for other ports
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
@@ -27,8 +29,8 @@ contactProRouter.post('/', (req: Request, res: Response) => {
   });
 
   const mailOptions = {
-    from: 'mickaelcharp@gmail.com',
-    to: 'mickaelcharp@gmail.com',
+    from: 'contact@lunetic.fr',
+    to: 'contact@lunetic.fr',
     subject: `[PRO] ${proSubject}`,
     text: `Nouveau message reçu par un professionnel. Voici ses coordonnées :
 
