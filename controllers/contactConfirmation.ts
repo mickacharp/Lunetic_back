@@ -4,36 +4,32 @@ import IContact from '../interfaces/IContact';
 const contactConfirmationRouter = Router();
 
 contactConfirmationRouter.post('/', (req: Request, res: Response) => {
-  const {
-    guestFirstname,
-    guestEmail,
-    guestMessage,
-    proFirstname,
-    proEmail,
-    proMessage,
-  } = req.body as IContact;
+  const { guestEmail, guestMessage, proEmail, proMessage } =
+    req.body as IContact;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'ssl0.ovh.net',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
     },
   });
 
-  const firstname = proFirstname === undefined ? guestFirstname : proFirstname;
   const email = proEmail === undefined ? guestEmail : proEmail;
   const message = proMessage === undefined ? guestMessage : proMessage;
 
   const mailOptions = {
-    from: 'mickaelcharp@gmail.com',
+    from: `"L'équipe Lunetic" <contact@lunetic.fr>`,
     to: `${email}`,
     subject: `[Lunetic] Prise en compte de votre demande`,
-    text: `Bonjour ${firstname}, nous avons bien reçu votre message.
+    text: `Bonjour, nous avons bien reçu votre message.
     Nous traiterons votre demande dans les plus brefs délais.
     Bonne journée.
     L'équipe Lunetic
 
+    ______________
     Rappel du contenu de votre message : 
 
     ${message}`,
