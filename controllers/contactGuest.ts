@@ -14,7 +14,9 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
   } = req.body as IContact;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'ssl0.ovh.net',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
@@ -22,8 +24,8 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
   });
 
   const mailOptions = {
-    from: 'mickaelcharp@gmail.com',
-    to: 'mickaelcharp@gmail.com',
+    from: 'contact@lunetic.fr',
+    to: 'contact@lunetic.fr',
     subject: `[VISITEUR] ${guestSubject}`,
     text: `Nouveau message reçu par un visiteur. Voici ses coordonnées :
 
@@ -32,6 +34,7 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
     Email: ${guestEmail}
     Téléphone : ${guestPhone}
 
+    ______________
     Contenu du message : 
 
     ${guestMessage}`,
