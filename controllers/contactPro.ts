@@ -19,9 +19,9 @@ contactProRouter.post('/', (req: Request, res: Response) => {
   } = req.body as IContact;
 
   const transporter = nodemailer.createTransport({
-    host: 'something.yourdomain.com',
-    port: 123456789,
-    secure: true, // true for 123456789, false for other ports
+    host: 'ssl0.ovh.net',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
@@ -43,6 +43,7 @@ contactProRouter.post('/', (req: Request, res: Response) => {
     Téléphone Mobile : ${proMobilePhone}
     Email : ${proEmail}
 
+    ______________
     Contenu du message : 
 
     ${proMessage}`,

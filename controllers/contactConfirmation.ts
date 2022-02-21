@@ -8,9 +8,9 @@ contactConfirmationRouter.post('/', (req: Request, res: Response) => {
     req.body as IContact;
 
   const transporter = nodemailer.createTransport({
-    host: 'something.yourdomain.com',
-    port: 123456789,
-    secure: true, // true for 123456789, false for other ports
+    host: 'ssl0.ovh.net',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
@@ -29,6 +29,7 @@ contactConfirmationRouter.post('/', (req: Request, res: Response) => {
     Bonne journée.
     L'équipe Lunetic
 
+    ______________
     Rappel du contenu de votre message : 
 
     ${message}`,
