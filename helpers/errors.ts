@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import 'dotenv/config';
 
 class ErrorHandler extends Error {
@@ -12,8 +12,9 @@ class ErrorHandler extends Error {
 
 const handleError = (
   err: ErrorHandler,
-  req: Request,
-  res: Response
+  _req: Request,
+  res: Response,
+  _next: NextFunction
 ) => {
   // manages environnement PROD/DEV
   const { statusCode = 500, message } = err;
