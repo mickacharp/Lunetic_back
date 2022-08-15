@@ -5,8 +5,8 @@ import { ResultSetHeader } from 'mysql2';
 import { NextFunction, Request, Response } from 'express';
 import { ErrorHandler } from '../helpers/errors';
 import IOptician from '../interfaces/IOptician';
-const NodeGeocoder: Function = require('node-geocoder');
 import apiKey from '../api';
+const NodeGeocoder: Function = require('node-geocoder');
 
 //////////// Password Hashing /////////////
 const hashingOptions: Options & { raw?: false } = {
@@ -54,7 +54,7 @@ const validateOptician = (req: Request, res: Response, next: NextFunction) => {
     company: Joi.string().max(255).presence(required),
     address: Joi.string().max(255).presence(required),
     other_address: Joi.string().max(255).allow('', null),
-    postal_code: Joi.string().max(50).presence(required),
+    postal_code: Joi.string().max(5).presence(required),
     city: Joi.string().max(255).presence(required),
     email: Joi.string().email().max(255).presence(required),
     mobile_phone: Joi.string().max(50).allow('', null),
