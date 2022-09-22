@@ -13,10 +13,19 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
     guestMessage,
   } = req.body as IContact;
 
+  // ID POUR LUNETIC
+  // const transporter = nodemailer.createTransport({
+  //   host: 'ssl0.ovh.net',
+  //   port: 465,
+  //   secure: true, // true for 465, false for other ports
+  //   auth: {
+  //     user: process.env.EMAIL,
+  //     pass: process.env.EMAIL_PASSWORD,
+  //   },
+  // });
+
   const transporter = nodemailer.createTransport({
-    host: 'ssl0.ovh.net',
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    service: 'gmail',
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
@@ -24,8 +33,8 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
   });
 
   const mailOptions = {
-    from: 'contact@lunetic.fr',
-    to: 'contact@lunetic.fr',
+    from: `${process.env.EMAIL}`,
+    to: `${process.env.EMAIL}`,
     subject: `[VISITEUR] ${guestSubject}`,
     text: `Nouveau message reçu par un visiteur. Voici ses coordonnées :
 
@@ -42,13 +51,12 @@ contactGuestRouter.post('/', (req: Request, res: Response) => {
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
+      res.status(502).send(error);
       console.log(error);
     } else {
-      console.log('Email sent: ' + info.response);
+      res.status(200).send(info.response);
     }
   });
-
-  res.status(200).send();
 });
 
 export default contactGuestRouter;
